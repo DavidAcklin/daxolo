@@ -102,47 +102,52 @@ describe('parseBetrag — gueltige Randfaelle', () => {
   });
 });
 
-describe('parseBetrag — klassische Fallstricke', () => {
-  it('rundet 0.005 nicht still, sondern meldet einen Fehler', () => {
-    expect(code('0.005')).toBe('zu-viele-nachkommastellen');
+describe('parseBetrag — Mehrdeutigkeit (CLAUDE.md 2.2)', () => {
+  // "1.000 kann tausend oder eins bedeuten; falsch geraten sind das drei
+  // Groessenordnungen. Dasselbe gilt fuer 1.005 — lesbar als 1005 oder als 1.00
+  // mit zu vielen Stellen. 0.005 ist dagegen nicht mehrdeutig, weil 0'005 keine
+  // plausible Schreibweise ist."
+  it.each([
+    ['1.000', "1'000", '1.00'],
+    ['1.005', "1'005", '1.00'],
+    ['1,000', "1'000", '1.00'],
+    ['12,345', "12'345", '12.34'],
+  ])('weist %o ab und nennt beide Schreibweisen', (eingabe, tausender, rappen) => {
+    const ergebnis = parseBetrag(eingabe);
+    expect(ergebnis.ok).toBe(false);
+    if (!ergebnis.ok) {
+      expect(ergebnis.code).toBe('mehrdeutig');
+      expect(ergebnis.nachricht).toContain(tausender);
+      expect(ergebnis.nachricht).toContain(rappen);
+    }
   });
 
-  it('rundet 1.005 nicht still, sondern meldet einen Fehler', () => {
-    expect(code('1.005')).toBe('mehrdeutig');
+  it("haelt 0.005 nicht fuer mehrdeutig, weil 0'005 keine Schreibweise waere", () => {
+    expect(code('0.005')).toBe('zu-viele-nachkommastellen');
+    expect(code('0,005')).toBe('zu-viele-nachkommastellen');
+  });
+
+  it('ist nur bei genau drei Nachkommastellen mehrdeutig', () => {
+    // Vier Stellen sind kein Tausendertrennzeichen, sondern zu viele Rappen.
+    expect(code('1.0055')).toBe('zu-viele-nachkommastellen');
+    // Vier Vorkommastellen passen in keine Dreiergruppe.
+    expect(code('1234.567')).toBe('zu-viele-nachkommastellen');
+    // Mit Tausendertrennzeichen ist die Lesart eindeutig — und schlicht zu genau.
+    expect(code("1'234.567")).toBe('zu-viele-nachkommastellen');
+  });
+});
+
+describe('parseBetrag — klassische Fallstricke (CLAUDE.md 2.2)', () => {
+  it('rundet 0.005 und 1.005 nie still, egal mit welchem Code', () => {
+    for (const eingabe of ['0.005', '1.005']) {
+      expect(parseBetrag(eingabe).ok).toBe(false);
+    }
   });
 
   it('nennt in der Meldung die auf Rappen gekuerzte Form', () => {
     const ergebnis = parseBetrag('1.005');
     expect(ergebnis.ok).toBe(false);
     if (!ergebnis.ok) expect(ergebnis.nachricht).toContain('1.00');
-  });
-
-  it('weist 1.000 ab, statt es als tausend oder eins zu raten', () => {
-    expect(code('1.000')).toBe('mehrdeutig');
-  });
-
-  it('nennt bei mehrdeutiger Eingabe beide korrekten Schreibweisen', () => {
-    const ergebnis = parseBetrag('1.000');
-    expect(ergebnis.ok).toBe(false);
-    if (!ergebnis.ok) {
-      expect(ergebnis.nachricht).toContain("1'000");
-      expect(ergebnis.nachricht).toContain('1.00');
-    }
-  });
-
-  it('behandelt auch das Komma als mehrdeutig', () => {
-    expect(code('12,345')).toBe('mehrdeutig');
-    const ergebnis = parseBetrag('12,345');
-    if (!ergebnis.ok) expect(ergebnis.nachricht).toContain("12'345");
-  });
-
-  it('ist nur bei genau drei Nachkommastellen mehrdeutig', () => {
-    // Vier Stellen sind kein Tausendertrennzeichen, sondern zu viele Rappen.
-    expect(code('1.0055')).toBe('zu-viele-nachkommastellen');
-    // Fuehrende Null: als Tausender waere das 0'005 — keine plausible Lesart.
-    expect(code('0.005')).toBe('zu-viele-nachkommastellen');
-    // Vier Vorkommastellen passen in keine Dreiergruppe.
-    expect(code('1234.567')).toBe('zu-viele-nachkommastellen');
   });
 
   it('weist 1,000.50 ab — Komma ist kein Tausendertrennzeichen', () => {
@@ -152,6 +157,11 @@ describe('parseBetrag — klassische Fallstricke', () => {
   it('weist Betraege ausserhalb des sicheren Bereichs ab', () => {
     expect(code('90071992547409.92')).toBe('zu-gross');
     expect(code('999999999999999999')).toBe('zu-gross');
+  });
+
+  it('liest negative Betraege exakt', () => {
+    expect(wert('-0.05')).toBe(-5);
+    expect(wert("-1'000.50")).toBe(-100050);
   });
 });
 

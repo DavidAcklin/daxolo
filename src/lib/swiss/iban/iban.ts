@@ -35,10 +35,24 @@ import { berechnePruefziffern, ibanRest } from './pruefziffer';
  * Laenge je Landescode. Bewusst nur CH und LI: fuer andere Laender liegt uns
  * kein geprueftes Register vor, und geraten wird nicht (CLAUDE.md 2.5). Kommt
  * ein Land dazu, gehoert seine Laenge als datierte Fachdatei nach `src/data/`.
+ *
+ * Eine auslaendische IBAN wird deshalb nicht abgewiesen, sondern abgestuft
+ * beantwortet: Modulo 97-10 ist landesunabhaengig rechenbar, Laenge und Aufbau
+ * bleiben ungeprueft.
  */
 export const IBAN_LAENGE: Readonly<Record<string, number>> = { CH: 21, LI: 21 };
 
 export type IbanLand = 'CH' | 'LI';
+
+/**
+ * Wie weit die Pruefung reicht (CLAUDE.md 2.5).
+ *
+ * - `vollstaendig`: Zeichen, Landescode, Laenge, Aufbau und Pruefziffer geprueft.
+ *   Nur fuer CH und LI, nur hier stehen IID, Kontonummer und QR-IBAN fest.
+ * - `nur-pruefziffer`: Die Pruefziffer nach Modulo 97-10 stimmt. Laenge und
+ *   Aufbau sind fuer dieses Land ungeprueft — nicht falsch, sondern ungeprueft.
+ */
+export type Pruefungsumfang = 'vollstaendig' | 'nur-pruefziffer';
 
 /** Erste und letzte QR-IID gemaess [2], beide einschliesslich. */
 export const QR_IID_VON = 30000;
@@ -51,8 +65,10 @@ const IID_BIS = 9;
 export type IbanFehlerCode =
   'leer' | 'ungueltiges-zeichen' | 'falsche-laenge' | 'unbekanntes-land' | 'pruefziffer-falsch';
 
-export interface IbanTreffer {
+/** Vollstaendig geprueft — nur fuer CH und LI. */
+export interface IbanVollstaendig {
   ok: true;
+  umfang: 'vollstaendig';
   /** Normalisiert: Grossbuchstaben, ohne Leerzeichen. */
   iban: string;
   /** In Vierergruppen, wie auf Rechnungen ueblich. */
@@ -65,6 +81,27 @@ export interface IbanTreffer {
   /** Liegt die IID im QR-IID-Bereich, ist es eine QR-IBAN [2]. */
   istQrIban: boolean;
 }
+
+/**
+ * Pruefziffer stimmt, Aufbau ungeprueft — fuer Laender ausserhalb CH und LI.
+ *
+ * Die beiden Aussagen stehen getrennt, damit eine Oberflaeche sie nicht
+ * versehentlich zu "gueltig" verschmelzen kann. `iid`, `kontonummer` und
+ * `istQrIban` gibt es hier nicht: sie folgen aus dem schweizerischen Aufbau,
+ * den wir fuer dieses Land nicht kennen.
+ */
+export interface IbanNurPruefziffer {
+  ok: true;
+  umfang: 'nur-pruefziffer';
+  iban: string;
+  formatiert: string;
+  /** Landescode der Eingabe, zum Beispiel "DE". */
+  land: string;
+  /** Was ungeprueft geblieben ist — im Klartext fuer die Oberflaeche. */
+  ungeprueft: string;
+}
+
+export type IbanTreffer = IbanVollstaendig | IbanNurPruefziffer;
 
 export interface IbanFehler {
   ok: false;
@@ -109,7 +146,37 @@ function istBekanntesLand(land: string): land is IbanLand {
 }
 
 /**
- * Prueft eine IBAN vollstaendig: Zeichen, Land, Laenge, Aufbau und Pruefziffer.
+ * Fehler zur Pruefziffer — landesunabhaengig, weil Modulo 97-10 es auch ist.
+ *
+ * Mehr als "stimmt nicht" laesst sich nicht sagen: das Verfahren zeigt, DASS
+ * etwas nicht zusammenpasst, nicht WO. Deshalb nennt die Meldung die Pruefziffer,
+ * die zum Rest passen wuerde, und laesst offen, auf welcher Seite der Tippfehler
+ * sitzt (CLAUDE.md 9).
+ */
+function pruefzifferFehler(land: string, iban: string, pruefziffer: string): IbanFehler {
+  const passende = berechnePruefziffern(land, iban.slice(4));
+  const hinweis =
+    passende === undefined
+      ? ''
+      : ` Zu den übrigen Stellen würde die Prüfziffer "${passende}" passen: stimmt die ` +
+        'Kontonummer, ist die Prüfziffer vertippt — sonst steckt der Fehler im Rest.';
+  return fehler(
+    'pruefziffer-falsch',
+    `Die Prüfziffer "${pruefziffer}" an Stelle 3 und 4 passt nicht zum Rest der IBAN. ` +
+      `Das heisst fast immer: die IBAN ist vertippt.${hinweis}`,
+    3,
+  );
+}
+
+/**
+ * Prueft eine IBAN, so weit wir sie belegen koennen (CLAUDE.md 2.5).
+ *
+ * Fuer CH und LI vollstaendig: Zeichen, Landescode, Laenge, Aufbau, Pruefziffer.
+ * Fuer alle anderen Laender rechnen wir Modulo 97-10 trotzdem — das Verfahren
+ * ist landesunabhaengig — und sagen dazu, dass Laenge und Aufbau ungeprueft
+ * bleiben. Ein unbekanntes Land ist damit kein Fehler, sondern eine Grenze der
+ * Aussage.
+ *
  * Wirft nie — im Fehlerfall kommt ein Objekt mit stabilem Code zurueck.
  */
 export function pruefeIban(eingabe: string): IbanErgebnis {
@@ -139,14 +206,6 @@ export function pruefeIban(eingabe: string): IbanErgebnis {
       1,
     );
   }
-  if (!istBekanntesLand(land)) {
-    return fehler(
-      'unbekanntes-land',
-      `Dieser Prüfer kennt nur die Schweiz (CH) und Liechtenstein (LI); deine IBAN ` +
-        `beginnt mit "${land}".`,
-      1,
-    );
-  }
 
   const pruefziffer = iban.slice(2, 4);
   if (!NUR_ZIFFERN.test(pruefziffer)) {
@@ -156,6 +215,36 @@ export function pruefeIban(eingabe: string): IbanErgebnis {
         `Beispiel: ${BEISPIEL}.`,
       3,
     );
+  }
+
+  // Kuerzer als Landescode, Pruefziffer und eine Stelle Konto kann keine IBAN
+  // sein — das folgt aus dem Aufbau selbst und gilt in jedem Land.
+  if (iban.length < 5) {
+    return fehler(
+      'falsche-laenge',
+      'Eine IBAN besteht aus Landescode, zwei Prüfziffern und der Kontonummer, ' +
+        `zum Beispiel ${BEISPIEL}. Deine Eingabe bricht nach ${iban.length} Stellen ab.`,
+      iban.length + 1,
+    );
+  }
+
+  // Ausserhalb von CH und LI kennen wir Laenge und Aufbau nicht — die
+  // Pruefziffer aber schon (CLAUDE.md 2.5).
+  if (!istBekanntesLand(land)) {
+    if (ibanRest(iban) !== 1) {
+      return pruefzifferFehler(land, iban, pruefziffer);
+    }
+    return {
+      ok: true,
+      umfang: 'nur-pruefziffer',
+      iban,
+      formatiert: formatiereIban(iban),
+      land,
+      ungeprueft:
+        `Länge und Aufbau einer ${land}-IBAN prüfen wir nicht — dafür fehlt uns ein ` +
+        'geprüftes Register. Vollständig geprüft werden die Schweiz (CH) und ' +
+        'Liechtenstein (LI).',
+    };
   }
 
   const soll = IBAN_LAENGE[land] ?? 0;
@@ -181,22 +270,12 @@ export function pruefeIban(eingabe: string): IbanErgebnis {
   }
 
   if (ibanRest(iban) !== 1) {
-    const passende = berechnePruefziffern(land, iban.slice(4));
-    const hinweis =
-      passende === undefined
-        ? ''
-        : ` Zu den übrigen Stellen würde die Prüfziffer "${passende}" passen: stimmt die ` +
-          'Kontonummer, ist die Prüfziffer vertippt — sonst steckt der Fehler im Rest.';
-    return fehler(
-      'pruefziffer-falsch',
-      `Die Prüfziffer "${pruefziffer}" an Stelle 3 und 4 passt nicht zum Rest der IBAN. ` +
-        `Das heisst fast immer: die IBAN ist vertippt.${hinweis}`,
-      3,
-    );
+    return pruefzifferFehler(land, iban, pruefziffer);
   }
 
   return {
     ok: true,
+    umfang: 'vollstaendig',
     iban,
     formatiert: formatiereIban(iban),
     land,
