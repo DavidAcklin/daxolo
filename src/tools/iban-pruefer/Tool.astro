@@ -1,0 +1,274 @@
+---
+import Feld from '../../components/Feld.astro';
+import Kachel from '../../components/Kachel.astro';
+import Knopf from '../../components/Knopf.astro';
+import Statusblock from '../../components/Statusblock.astro';
+import type { Locale } from '../../i18n/ui';
+import { BEISPIEL_IBAN, befund } from './logic';
+import { formatiere, texte } from './texte';
+
+/**
+ * Oberfläche des IBAN-Prüfers.
+ *
+ * Die Seite kommt fertig geprüft aus dem Build: das Beispiel steht im Feld, sein
+ * Ergebnis darunter (CLAUDE.md 5). Das Skript aktualisiert nur, was sich ändert
+ * — es baut kein HTML nach, das hier schon steht. Ohne JavaScript bleibt das
+ * Beispielergebnis stehen und die Seite ist lesbar.
+ */
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = texte[locale];
+
+const start = befund(BEISPIEL_IBAN);
+const statusName = {
+  erfolg: t['status.erfolg'],
+  warnung: t['status.warnung'],
+  fehler: t['status.fehler'],
+};
+
+// Das Skript braucht dieselben Texte im Browser. Sie stehen als JSON im Markup,
+// damit kein zweiter Netzwerkzugriff nötig ist (CLAUDE.md 2.6).
+const skripttexte = JSON.stringify({ texte: t, statusName });
+---
+
+<Kachel>
+  <form class="form" data-iban-form novalidate>
+    <Feld
+      id="iban-eingabe"
+      label={t['feld.label']}
+      wert={BEISPIEL_IBAN}
+      platzhalter={t['feld.platzhalter']}
+      hinweis={t['feld.hinweis']}
+      autocomplete="off"
+      zahl
+    />
+    {
+      /* Ohne JavaScript prüft der Knopf beim Absenden nichts — die Seite bleibt
+        trotzdem nutzbar, weil das Beispielergebnis schon dasteht. */
+    }
+    <Knopf typ="submit">{t['aktion.pruefen']}</Knopf>
+  </form>
+</Kachel>
+
+<div class="ergebnis" data-ergebnis aria-live="polite">
+  {
+    start !== undefined && (
+      <Statusblock art={start.status} titel={t[start.titel]} artName={statusName[start.status]}>
+        {start.texte.map((schluessel) => (
+          <p data-text>{formatiere(t[schluessel], start.werte)}</p>
+        ))}
+      </Statusblock>
+    )
+  }
+
+  <table class="werte" data-tabelle>
+    <caption class="sr-only">{t['ergebnis.titel']}</caption>
+    <thead class="sr-only">
+      <tr>
+        <th scope="col">{t['tabelle.feld']}</th>
+        <th scope="col">{t['tabelle.wert']}</th>
+      </tr>
+    </thead>
+    <tbody data-zeilen>
+      {
+        start?.zeilen.map((zeile) => (
+          <tr>
+            <th scope="row">{t[zeile.schluessel]}</th>
+            <td class={zeile.zahl ? 'zahl' : undefined}>
+              {zeile.wert.startsWith('zeile.') ? t[zeile.wert as keyof typeof t] : zeile.wert}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p class="aktionen" data-aktionen hidden={start?.kopierwert === undefined}>
+    <Knopf art="sekundaer" id="iban-kopieren">{t['aktion.kopieren']}</Knopf>
+    <span class="bestaetigung" data-bestaetigung role="status"></span>
+  </p>
+</div>
+
+<script type="application/json" data-iban-texte set:html={skripttexte} is:inline />
+
+<script>
+  import { befund, type Befund } from './logic';
+  import { formatiere } from './texte';
+
+  type Woerterbuch = Record<string, string>;
+
+  const wurzel = document.querySelector<HTMLElement>('[data-ergebnis]');
+  const eingabe = document.querySelector<HTMLInputElement>('#iban-eingabe');
+  const form = document.querySelector<HTMLFormElement>('[data-iban-form]');
+  const textblock = document.querySelector<HTMLScriptElement>('[data-iban-texte]');
+
+  if (wurzel !== null && eingabe !== null && textblock !== null) {
+    const { texte, statusName } = JSON.parse(textblock.textContent ?? '{}') as {
+      texte: Woerterbuch;
+      statusName: Woerterbuch;
+    };
+
+    const status = wurzel.querySelector<HTMLElement>('.status');
+    const zeilen = wurzel.querySelector<HTMLElement>('[data-zeilen]');
+    const tabelle = wurzel.querySelector<HTMLElement>('[data-tabelle]');
+    const aktionen = wurzel.querySelector<HTMLElement>('[data-aktionen]');
+    const bestaetigung = wurzel.querySelector<HTMLElement>('[data-bestaetigung]');
+    const kopieren = document.querySelector<HTMLButtonElement>('#iban-kopieren');
+    const fehlerfeld = document.querySelector<HTMLElement>('#iban-eingabe-fehler');
+
+    let kopierwert = '';
+
+    function zeige(ergebnis: Befund | undefined) {
+      if (status === null || zeilen === null || tabelle === null) return;
+
+      if (ergebnis === undefined) {
+        status.hidden = true;
+        tabelle.hidden = true;
+        if (aktionen !== null) aktionen.hidden = true;
+        eingabe?.removeAttribute('aria-invalid');
+        if (fehlerfeld !== null) fehlerfeld.textContent = '';
+        return;
+      }
+
+      status.hidden = false;
+      status.dataset['art'] = ergebnis.status;
+
+      const artname = status.querySelector<HTMLElement>('[data-artname]');
+      const titel = status.querySelector<HTMLElement>('[data-titel]');
+      if (artname !== null) artname.textContent = `${statusName[ergebnis.status] ?? ''}: `;
+      if (titel !== null)
+        titel.textContent = formatiere(texte[ergebnis.titel] ?? '', ergebnis.werte);
+
+      // Erläuterungen: vorhandene Absätze wiederverwenden, Rest entfernen.
+      const inhalt = status.querySelector<HTMLElement>('.inhalt');
+      if (inhalt !== null) {
+        const vorhanden = [...inhalt.querySelectorAll<HTMLElement>('[data-text]')];
+        ergebnis.texte.forEach((schluessel, i) => {
+          const absatz = vorhanden[i] ?? inhalt.appendChild(document.createElement('p'));
+          absatz.dataset['text'] = '';
+          absatz.textContent = formatiere(texte[schluessel] ?? '', ergebnis.werte);
+        });
+        vorhanden.slice(ergebnis.texte.length).forEach((absatz) => absatz.remove());
+      }
+
+      // Die Fehlermeldung steht doppelt: am Feld für die Eingabe, im Statusblock
+      // für das Ergebnis. Beides ist aria-live, deshalb bekommt das Feld nur
+      // den kurzen Hinweis.
+      const istFehler = ergebnis.status === 'fehler';
+      eingabe?.setAttribute('aria-invalid', String(istFehler));
+      if (fehlerfeld !== null) {
+        fehlerfeld.textContent = istFehler
+          ? formatiere(texte[ergebnis.titel] ?? '', ergebnis.werte)
+          : '';
+      }
+
+      tabelle.hidden = ergebnis.zeilen.length === 0;
+      zeilen.replaceChildren(
+        ...ergebnis.zeilen.map((zeile) => {
+          const tr = document.createElement('tr');
+          const kopf = document.createElement('th');
+          kopf.scope = 'row';
+          kopf.textContent = texte[zeile.schluessel] ?? zeile.schluessel;
+          const wert = document.createElement('td');
+          if (zeile.zahl) wert.className = 'zahl';
+          wert.textContent = zeile.wert.startsWith('zeile.')
+            ? (texte[zeile.wert] ?? zeile.wert)
+            : zeile.wert;
+          tr.append(kopf, wert);
+          return tr;
+        }),
+      );
+
+      kopierwert = ergebnis.kopierwert ?? '';
+      if (aktionen !== null) aktionen.hidden = kopierwert === '';
+      if (bestaetigung !== null) bestaetigung.textContent = '';
+    }
+
+    // Einmal zum Start: das Skript uebernimmt den Zustand, den der Build
+    // gerendert hat. Sonst kennt es den Kopierwert erst nach der ersten
+    // Eingabe — und Server und Browser koennten auseinanderlaufen, ohne dass
+    // es auffaellt.
+    zeige(befund(eingabe.value));
+
+    eingabe.addEventListener('input', () => zeige(befund(eingabe.value)));
+    form?.addEventListener('submit', (ereignis) => {
+      ereignis.preventDefault();
+      zeige(befund(eingabe.value));
+    });
+
+    kopieren?.addEventListener('click', () => {
+      if (kopierwert === '') return;
+      void navigator.clipboard.writeText(kopierwert).then(() => {
+        if (bestaetigung !== null) bestaetigung.textContent = texte['aktion.kopiert'] ?? '';
+      });
+    });
+  }
+</script>
+
+<style>
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-innen);
+    align-items: flex-start;
+  }
+
+  .ergebnis {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-innen);
+    margin-block-start: var(--spacing-innen);
+  }
+
+  .werte {
+    inline-size: 100%;
+    border-collapse: collapse;
+    background-color: var(--flaeche-kachel);
+    border-radius: var(--radius-kachel);
+    padding: var(--spacing-kachel);
+    /* Tabelle als Ganzes in einer Kachel (CLAUDE.md 6). */
+    display: block;
+  }
+
+  .werte th[scope='row'] {
+    text-align: start;
+    font-weight: 400;
+    color: var(--text-sekundaer);
+    font-size: var(--text-klein);
+    padding-block: var(--spacing-eng);
+    padding-inline-end: var(--spacing-innen);
+    border-block-start: 1px solid var(--linie);
+    inline-size: 40%;
+  }
+
+  .werte td {
+    padding-block: var(--spacing-eng);
+    border-block-start: 1px solid var(--linie);
+    text-align: end;
+  }
+
+  .werte tbody tr:first-child th,
+  .werte tbody tr:first-child td {
+    border-block-start: none;
+  }
+
+  .werte td.zahl {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .aktionen {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-eng);
+    margin: 0;
+  }
+
+  .bestaetigung {
+    color: var(--erfolg-text);
+    font-size: var(--text-klein);
+  }
+</style>

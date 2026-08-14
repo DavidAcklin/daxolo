@@ -1,0 +1,56 @@
+---
+/**
+ * Knopf — Pillenform, wie sie Leitplanke 2 für Buttons und Badges vorsieht.
+ *
+ * Ein `<button>` ist ein `<button>` (CLAUDE.md 7). Farbe trägt hier keine
+ * Statusbedeutung: die Markenfarbe markiert die Hauptaktion, mehr nicht.
+ */
+interface Props {
+  art?: 'primaer' | 'sekundaer' | undefined;
+  typ?: 'button' | 'submit' | undefined;
+  id?: string | undefined;
+  /** Nur setzen, wenn der Text allein nicht trägt. */
+  beschriftung?: string | undefined;
+}
+
+const { art = 'primaer', typ = 'button', id, beschriftung } = Astro.props;
+---
+
+<button type={typ} id={id} class:list={['knopf', art]} aria-label={beschriftung}>
+  <slot />
+</button>
+
+<style>
+  .knopf {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pille);
+    padding: 0.5rem 1rem;
+    font: inherit;
+    font-size: var(--text-klein);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+  }
+
+  .primaer {
+    background-color: var(--marke-aktion);
+    color: var(--marke-aktion-text);
+  }
+
+  .primaer:hover {
+    background-color: var(--marke-aktion-hover);
+  }
+
+  .sekundaer {
+    background-color: transparent;
+    border-color: var(--linie-stark);
+    color: var(--text-primaer);
+  }
+
+  .sekundaer:hover {
+    background-color: var(--flaeche-innen);
+  }
+</style>

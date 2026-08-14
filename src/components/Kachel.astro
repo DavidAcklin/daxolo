@@ -1,0 +1,69 @@
+---
+/**
+ * Kachel — die Grundform des Design-Systems (CLAUDE.md 6).
+ *
+ * Höchstens eine Verschachtelungsstufe: eine Kachel enthält Inhalt oder eine
+ * Tabelle, nie eine weitere Kachel. Wer eine zweite Ebene braucht, nimmt die
+ * Innenfläche über `<div class="innen">` — dafür gibt es genau einen Ton.
+ */
+interface Props {
+  /** Überschrift der Kachel. Ohne Titel bleibt die Kachel titellos. */
+  titel?: string | undefined;
+  /** Kurze Einordnung unter dem Titel. */
+  hinweis?: string | undefined;
+  /** Semantisches Element. Standard ist `section`, sobald es einen Titel gibt. */
+  als?: 'section' | 'div' | 'article' | undefined;
+  /** Eigene Id für `aria-labelledby`, falls zwei Kacheln denselben Titel tragen. */
+  titelId?: string | undefined;
+}
+
+const { titel, hinweis, als, titelId } = Astro.props;
+const Element = als ?? (titel === undefined ? 'div' : 'section');
+
+// Aus dem Titel abgeleitet und damit stabil über Builds hinweg — kein Zufall,
+// der bei jedem Build ein anderes HTML erzeugt.
+const id =
+  titel === undefined
+    ? undefined
+    : (titelId ??
+      `kachel-${titel
+        .toLowerCase()
+        .normalize('NFKD')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')}`);
+---
+
+<Element class="kachel" aria-labelledby={id}>
+  {
+    titel !== undefined && (
+      <header class="kopf">
+        <h2 id={id}>{titel}</h2>
+        {hinweis !== undefined && <p class="hinweis">{hinweis}</p>}
+      </header>
+    )
+  }
+  <slot />
+</Element>
+
+<style>
+  .kachel {
+    background-color: var(--flaeche-kachel);
+    border-radius: var(--radius-kachel);
+    padding: var(--spacing-kachel);
+  }
+
+  .kopf {
+    margin-block-end: var(--spacing-innen);
+  }
+
+  .kopf h2 {
+    margin: 0;
+  }
+
+  .hinweis {
+    margin: 0;
+    margin-block-start: 0.25rem;
+    color: var(--text-sekundaer);
+    font-size: var(--text-klein);
+  }
+</style>
