@@ -1,11 +1,12 @@
 /**
  * Schweizer Fachlogik: IBAN, Referenzen, Pruefziffern, MwSt-Logik (CLAUDE.md 4).
  *
- * Noch leer — hier kommt Code erst hinein, wenn die Quelle benannt ist
- * (CLAUDE.md 2.5). Geplant, jeweils mit offiziellen Testvektoren belegt:
- * Modulo 97-10 (IBAN, Creditor Reference ISO 11649), Modulo 10 rekursiv
- * (QR-Referenz), QR-IBAN-Erkennung, MwSt-Saetze ueber `src/data/`.
+ * Vorhanden: IBAN inklusive Modulo 97-10 und QR-IBAN-Erkennung (`./iban`).
+ * Geplant, jeweils erst mit benannter Quelle und offiziellen Testvektoren
+ * (CLAUDE.md 2.5): Creditor Reference nach ISO 11649, QR-Referenz mit Modulo 10
+ * rekursiv, MwSt-Saetze ueber `src/data/`.
  */
+export * from './iban';
 
 /**
  * Version der Schweizer Implementation Guidelines QR-Rechnung (CLAUDE.md 2.4).
