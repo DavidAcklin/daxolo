@@ -86,6 +86,20 @@ Nutzereingaben laufen ausschliesslich über `parseBetrag` aus `src/lib/money/`, 
 Ausgaben von `Intl` für de-CH (`1’000.50`) und fr-CH (`1 000,50`). Alles andere ergibt
 ein Fehlerobjekt mit Code und Meldung — nie stillschweigend 0 oder NaN.
 
+## IBAN
+
+`src/lib/swiss/iban/` prüft schweizerische und liechtensteinische IBAN: Normalisierung,
+Struktur, Modulo 97-10, QR-IBAN-Erkennung, Formatierung in Vierergruppen. Reine
+Funktionen, Ergebnisobjekt statt Exception. Quellen sind im Modulkopf einzeln benannt:
+
+- SIX, [IBAN — Standards Zahlungsverkehr Schweiz](https://www.six-group.com/en/products-services/banking-services/payment-standardization/standards/iban.html):
+  21 Stellen, IID an Stelle 5–9, Prüfziffer nach Modulo 97-10 gemäss ISO/IEC 7064.
+- SIX, Schweizer Implementation Guidelines QR-Rechnung, Version 2.3 (20.11.2023),
+  Kapitel 2.8 und 2.10: QR-IID exklusiv 30000–31999.
+- SIX, Fachliche Informationen zur QR-IID und QR-IBAN, Version 1.1 (29.02.2020).
+
+Die Testvektoren stammen aus den Beispielrechnungen der Implementation Guidelines.
+
 ## Stand des Gerüsts
 
 Noch keine Werkzeuge, kein Design-System. `src/styles/tokens.css` ist absichtlich leer,

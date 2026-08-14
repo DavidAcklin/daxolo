@@ -76,9 +76,19 @@ lösen keine Bewilligungsfragen aus. Diese Eigenschaft geben wir nicht auf.
   Parameter verlangen. Es gibt keine stille Rundung.
 - **Eingaben werden über `parseBetrag` gelesen, nie über `parseFloat`.** Akzeptiert
   werden mindestens `1'000.50`, `1000,50`, `1000.50`, `1 000.50` und führende/folgende
-  Leerzeichen. Alles andere wird als Fehler zurückgegeben, nie stillschweigend zu 0 oder
-  NaN. Dies ist die Stelle, an der Nutzereingaben auf unsere Zahlen treffen — sie
+  Leerzeichen, inklusive der Apostroph- und Leerzeichenvarianten, die `Intl` für `de-CH`
+  und `fr-CH` ausgibt. Alles andere wird als Fehler zurückgegeben, nie stillschweigend zu
+  0 oder NaN. Dies ist die Stelle, an der Nutzereingaben auf unsere Zahlen treffen — sie
   existiert und ist getestet, bevor das erste Tool gebaut wird.
+- **Parsing rundet nie.** Mehr als zwei Nachkommastellen sind ein Fehler, keine stille
+  Korrektur. Runden ist ein fachlicher Entscheid und gehört dorthin, wo er begründet
+  werden kann.
+- **Mehrdeutige Eingaben werden abgewiesen, nicht geraten.** `1.000` kann tausend oder
+  eins bedeuten; falsch geraten sind das drei Grössenordnungen. Die Fehlermeldung nennt
+  in solchen Fällen **beide korrekten Schreibweisen**, damit die Nutzerin entscheidet.
+- Beträge und Stückpreise sind fachlich verschieden. Wenn später höhere Präzision nötig
+  wird (Mengen, Einheitspreise), entsteht dafür ein **eigener Typ mit eigener
+  Parse-Funktion** — `parseBetrag` wird dafür nicht aufgeweicht.
 
 ### 2.3 Fachdaten sind datiert, nie hartcodiert
 
@@ -239,7 +249,9 @@ Jedes Tool liefert vollständig:
 - [ ] Sichtbare Angabe "Stand · Quelle", wo Fachdaten einfliessen
 - [ ] Haftungsausschluss, wo das Ergebnis rechtliche oder finanzielle Wirkung hat
 - [ ] Erklärtext unter dem Tool (min. 150 Wörter): was es tut, wann man es braucht,
-      welche Regel dahintersteht
+      welche Regel dahintersteht. Ablage in einer **eigenen Collection**, eine Datei je
+      Sprache nach dem Schema `<slug>.<sprache>.md`. Eine fehlende Übersetzung ist eine
+      fehlende Datei — sichtbar, ohne Sonderfall im Schema.
 - [ ] Sinnvolle Defaults — beim Laden ein funktionierendes Beispiel, nie ein leeres
       Formular
 - [ ] Copy-Button für jedes Ergebnis, mit sichtbarer Bestätigung

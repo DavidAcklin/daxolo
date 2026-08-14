@@ -20,7 +20,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "audit:ci": "npm audit --audit-level=high",
-    "lighthouse": "npx --yes @lhci/cli@0.15 autorun"
+    "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun"
   },
   "dependencies": {
     "astro": "^7.2.2"

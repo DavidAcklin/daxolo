@@ -26,6 +26,7 @@ export type ParseFehlerCode =
   | 'unerlaubte-zeichen'
   | 'mehrere-dezimaltrenner'
   | 'unvollstaendig'
+  | 'mehrdeutig'
   | 'zu-viele-nachkommastellen'
   | 'ungueltige-gruppierung'
   | 'zu-gross';
@@ -92,6 +93,20 @@ export function parseBetrag(eingabe: string): ParseErgebnis {
     return fehler('unerlaubte-zeichen', 'Nach dem Dezimaltrennzeichen stehen nur Ziffern.');
   }
   if (nachkomma.length > 2) {
+    // `1.000` kann tausend oder eins bedeuten — falsch geraten sind das drei
+    // Groessenordnungen (CLAUDE.md 2.2). Genau drei Nachkommastellen hinter
+    // einer Zahl ohne fuehrende Null sind so ein Fall; die Meldung nennt beide
+    // korrekten Schreibweisen und laesst die Nutzerin entscheiden.
+    const ohneGruppentrenner = ganzTeil.split(GRUPPENTRENNER).join('');
+    const mehrdeutig =
+      nachkomma.length === 3 && ohneGruppentrenner === ganzTeil && /^[1-9]\d{0,2}$/.test(ganzTeil);
+    if (mehrdeutig) {
+      return fehler(
+        'mehrdeutig',
+        `"${ganzTeil}.${nachkomma}" ist mehrdeutig. Für tausend schreibe ` +
+          `${ganzTeil}'${nachkomma}, für den Betrag mit Rappen ${ganzTeil}.${nachkomma.slice(0, 2)}.`,
+      );
+    }
     return fehler(
       'zu-viele-nachkommastellen',
       'Ein Betrag hat höchstens zwei Nachkommastellen. Runde selbst auf Rappen, ' +
