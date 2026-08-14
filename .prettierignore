@@ -1,0 +1,12 @@
+dist/
+.astro/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+.lighthouseci/
+package-lock.json
+*.pdf
+
+# Die Projektverfassung bleibt so, wie sie geschrieben wurde.
+CLAUDE.md

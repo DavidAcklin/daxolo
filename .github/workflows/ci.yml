@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Ein laufender Durchgang je Branch reicht.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  qualitaet:
+    name: Typecheck, Lint, Test, Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Formatierung
+        run: npm run format:check
+
+      - name: Unit-Tests
+        run: npm test
+
+      # CLAUDE.md 3: ein Finanzprodukt mit rotem Audit verliert sein Kapital.
+      - name: Sicherheitsaudit
+        run: npm run audit:ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Build-Artefakt sichern
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  e2e:
+    name: Smoke-Tests
+    runs-on: ubuntu-latest
+    needs: qualitaet
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Browser installieren
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright
+        run: npm run test:e2e
+
+      - name: Bericht sichern
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse
+    runs-on: ubuntu-latest
+    needs: qualitaet
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # lhci laeuft bewusst per npx und steht nicht in package.json: sein
+      # Abhaengigkeitsbaum wuerde sonst das Audit-Gate dauerhaft rot faerben.
+      # Chrome ist auf ubuntu-latest vorinstalliert.
+      - name: Lighthouse CI
+        run: npm run lighthouse
+
+      - name: Berichte sichern
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse
+          path: .lighthouseci/
+          retention-days: 7

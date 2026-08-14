@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ToolList from '../../../components/ToolList.astro';
+import { useTranslations } from '../../../i18n/utils';
+
+const t = useTranslations('en');
+---
+
+<BaseLayout title={t('nav.tools')} description={t('site.tagline')}>
+  <h1>{t('nav.tools')}</h1>
+  <ToolList locale="en" />
+</BaseLayout>

@@ -1,0 +1,84 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { localeTags, type Locale } from '../i18n/ui';
+import { getLocaleFromUrl, useTranslations } from '../i18n/utils';
+
+/**
+ * Rahmen jeder Toolseite (CLAUDE.md 5).
+ *
+ * Das Tool selbst kommt in den Standard-Slot, der Erklaertext in den Slot
+ * `erklaerung`. "Stand · Quelle" und Haftungsausschluss sind Props, damit kein
+ * Tool sie vergessen kann, ohne dass es auffaellt.
+ */
+interface Props {
+  title: string;
+  description: string;
+  /** ISO-Datum (YYYY-MM-DD) der Fachdaten, die einfliessen. */
+  stand?: string | undefined;
+  /** Amtliche Stelle hinter den Fachdaten. */
+  quelle?: { name: string; url: string } | undefined;
+  /** Text bei rechtlicher oder finanzieller Wirkung (CLAUDE.md 9). */
+  haftungsausschluss?: string | undefined;
+  alternates?: Partial<Record<Locale, string>> | undefined;
+}
+
+const { title, description, stand, quelle, haftungsausschluss, alternates } = Astro.props;
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const standFormatiert =
+  stand === undefined
+    ? undefined
+    : new Intl.DateTimeFormat(localeTags[locale], {
+        dateStyle: 'long',
+        timeZone: 'UTC',
+      }).format(new Date(`${stand}T00:00:00Z`));
+---
+
+<BaseLayout title={title} description={description} alternates={alternates}>
+  <article>
+    <header>
+      <h1>{title}</h1>
+      <p>{description}</p>
+    </header>
+
+    {/* Das Tool. Island, laedt bei Bedarf (CLAUDE.md 5). */}
+    <slot />
+
+    {
+      (standFormatiert || quelle) && (
+        <p data-herkunft>
+          {standFormatiert && (
+            <span>
+              {t('tool.stand')}: <time datetime={stand}>{standFormatiert}</time>
+            </span>
+          )}
+          {quelle && (
+            <span>
+              {' · '}
+              {t('tool.source')}:{' '}
+              <a href={quelle.url} rel="noopener noreferrer">
+                {quelle.name}
+              </a>
+            </span>
+          )}
+        </p>
+      )
+    }
+
+    {
+      haftungsausschluss && (
+        <aside aria-labelledby="haftungsausschluss">
+          <h2 id="haftungsausschluss">{t('tool.disclaimer.title')}</h2>
+          <p>{haftungsausschluss}</p>
+        </aside>
+      )
+    }
+
+    <section aria-labelledby="erklaerung">
+      <h2 id="erklaerung">{t('tool.explanation.title')}</h2>
+      <slot name="erklaerung" />
+    </section>
+  </article>
+</BaseLayout>

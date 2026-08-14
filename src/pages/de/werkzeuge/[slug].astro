@@ -1,0 +1,24 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { useTranslations } from '../../../i18n/utils';
+import { alternatePfade, werkzeugRouten } from '../../../lib/werkzeuge';
+
+// `/de/werkzeuge/<slug>/` — Segment und Slug sind deutsch (CLAUDE.md 4).
+export const getStaticPaths = (() => werkzeugRouten('de')) satisfies GetStaticPaths;
+
+const { werkzeug, fassung } = Astro.props;
+const t = useTranslations('de');
+const { Content } = await render(werkzeug);
+---
+
+<ToolLayout
+  title={fassung.title}
+  description={fassung.description}
+  alternates={alternatePfade(werkzeug)}
+  haftungsausschluss={fassung.haftungsausschluss ? t('tool.disclaimer.text') : undefined}
+>
+  {/* Hier kommt das Tool-Island hinein, sobald es eins gibt (CLAUDE.md 5). */}
+  <Content slot="erklaerung" />
+</ToolLayout>

@@ -1,0 +1,78 @@
+---
+import '../styles/global.css';
+import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import { localeTags, locales, type Locale } from '../i18n/ui';
+import {
+  getLocaleFromUrl,
+  localePath,
+  switchLocalePath,
+  useTranslations,
+  werkzeugePath,
+} from '../i18n/utils';
+
+interface Props {
+  title: string;
+  description: string;
+  /**
+   * Pfade der vorhandenen Sprachfassungen. Ohne die Prop wird der Pfad
+   * uebersetzt (Sprache und Werkzeug-Segment); mit ihr gilt ausschliesslich,
+   * was drinsteht — fuer Seiten mit uebersetzten Slugs.
+   */
+  alternates?: Partial<Record<Locale, string>> | undefined;
+}
+
+const { title, description, alternates } = Astro.props;
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+const base = Astro.site ?? new URL('/', Astro.url);
+
+const canonical = new URL(Astro.url.pathname, base);
+const alternateUrls = locales
+  .map((l) => ({
+    tag: localeTags[l],
+    pfad: alternates === undefined ? switchLocalePath(Astro.url.pathname, l) : alternates[l],
+  }))
+  .filter((eintrag): eintrag is { tag: string; pfad: string } => eintrag.pfad !== undefined)
+  .map((eintrag) => ({ tag: eintrag.tag, href: new URL(eintrag.pfad, base).href }));
+---
+
+<!doctype html>
+<html lang={localeTags[locale]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · {t('site.name')}</title>
+    <meta name="description" content={description} />
+    {/* Ohne Icon fragt der Browser /favicon.ico an und protokolliert einen 404. */}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical.href} />
+    {alternateUrls.map((alt) => <link rel="alternate" hreflang={alt.tag} href={alt.href} />)}
+    <link rel="alternate" hreflang="x-default" href={new URL(localePath('de'), base).href} />
+    <meta name="generator" content={Astro.generator} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a href="#inhalt" class="sr-only focus:not-sr-only">{t('skip.link')}</a>
+
+    <header>
+      <nav aria-label={t('nav.label')}>
+        <ul>
+          <li><a href={localePath(locale)}>{t('site.name')}</a></li>
+          <li><a href={werkzeugePath(locale)}>{t('nav.tools')}</a></li>
+        </ul>
+      </nav>
+      <LanguageSwitcher alternates={alternates} />
+    </header>
+
+    <main id="inhalt">
+      <slot />
+    </main>
+
+    <footer>
+      {/* CLAUDE.md 2.1 — das Verkaufsargument steht auf jeder Seite. */}
+      <p>{t('footer.privacy')}</p>
+      {/* TODO: Impressum und Datenschutzerklaerung in allen Sprachen (CLAUDE.md 9). */}
+    </footer>
+  </body>
+</html>

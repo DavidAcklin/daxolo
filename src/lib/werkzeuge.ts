@@ -1,0 +1,92 @@
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { locales, type Locale } from '../i18n/ui';
+import { toolPath } from '../i18n/utils';
+
+/**
+ * Adapter zwischen der Content Collection und den Routen.
+ *
+ * Hier — und nur hier — wird entschieden, welche Werkzeuge in welcher Sprache
+ * existieren. Die Routen selbst enthalten keine Auswahllogik.
+ */
+
+export type Werkzeug = CollectionEntry<'tools'>;
+
+/** Ein Werkzeug in genau einer Sprache, flach fuer die Anzeige. */
+export interface Werkzeugfassung {
+  id: string;
+  locale: Locale;
+  slug: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  category: Werkzeug['data']['category'];
+  stufe: Werkzeug['data']['stufe'];
+  haftungsausschluss: boolean;
+  pfad: string;
+}
+
+/**
+ * Entwuerfe erscheinen nur lokal. Ein halbfertiges Finanzwerkzeug soll niemand
+ * versehentlich im Netz finden.
+ */
+function istSichtbar(werkzeug: Werkzeug): boolean {
+  return import.meta.env.PROD ? werkzeug.data.status === 'live' : true;
+}
+
+export function fassung(werkzeug: Werkzeug, locale: Locale): Werkzeugfassung | undefined {
+  const sprache = werkzeug.data.sprachen[locale];
+  if (sprache === undefined) return undefined;
+
+  return {
+    id: werkzeug.id,
+    locale,
+    slug: sprache.slug,
+    title: sprache.title,
+    description: sprache.description,
+    keywords: sprache.keywords,
+    category: werkzeug.data.category,
+    stufe: werkzeug.data.stufe,
+    haftungsausschluss: werkzeug.data.haftungsausschluss,
+    pfad: toolPath(locale, sprache.slug),
+  };
+}
+
+/** Alle sichtbaren Werkzeuge, die es in dieser Sprache gibt — alphabetisch. */
+export async function werkzeugeFuer(locale: Locale): Promise<Werkzeugfassung[]> {
+  const alle = await getCollection('tools', istSichtbar);
+  return alle
+    .map((werkzeug) => fassung(werkzeug, locale))
+    .filter((eintrag) => eintrag !== undefined)
+    .sort((a, b) => a.title.localeCompare(b.title, locale));
+}
+
+/**
+ * Routen einer Sprache fuer `getStaticPaths`. Eine Seite entsteht nur dort, wo
+ * es die Sprachfassung wirklich gibt — nie unter einem geratenen Slug.
+ */
+export async function werkzeugRouten(
+  locale: Locale,
+): Promise<
+  { params: { slug: string }; props: { werkzeug: Werkzeug; fassung: Werkzeugfassung } }[]
+> {
+  const alle = await getCollection('tools', istSichtbar);
+  return alle.flatMap((werkzeug) => {
+    const eintrag = fassung(werkzeug, locale);
+    return eintrag === undefined
+      ? []
+      : [{ params: { slug: eintrag.slug }, props: { werkzeug, fassung: eintrag } }];
+  });
+}
+
+/**
+ * Pfade der vorhandenen Sprachfassungen — Grundlage fuer Sprachumschalter und
+ * hreflang. Sprachen ohne Fassung fehlen bewusst.
+ */
+export function alternatePfade(werkzeug: Werkzeug): Partial<Record<Locale, string>> {
+  const pfade: Partial<Record<Locale, string>> = {};
+  for (const locale of locales) {
+    const sprache = werkzeug.data.sprachen[locale];
+    if (sprache !== undefined) pfade[locale] = toolPath(locale, sprache.slug);
+  }
+  return pfade;
+}

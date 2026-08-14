@@ -1,0 +1,30 @@
+---
+import type { Locale } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { werkzeugeFuer } from '../lib/werkzeuge';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+// Ein Werkzeug erscheint in einer Sprache nur, wenn es dort auch existiert.
+const eintraege = await werkzeugeFuer(locale);
+---
+
+{
+  eintraege.length === 0 ? (
+    <p>{t('tools.empty')}</p>
+  ) : (
+    <ul>
+      {eintraege.map((eintrag) => (
+        <li>
+          <a href={eintrag.pfad}>{eintrag.title}</a>
+          <p>{eintrag.description}</p>
+        </li>
+      ))}
+    </ul>
+  )
+}

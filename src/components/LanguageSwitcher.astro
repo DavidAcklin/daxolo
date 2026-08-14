@@ -1,0 +1,50 @@
+---
+import { localeNames, localeTags, locales, ui, type Locale } from '../i18n/ui';
+import { getLocaleFromUrl, switchLocalePath, useTranslations } from '../i18n/utils';
+
+interface Props {
+  /**
+   * Pfade der vorhandenen Sprachfassungen. Ist die Prop gesetzt, gilt sie
+   * abschliessend: eine fehlende Sprache wird als fehlend angezeigt, statt auf
+   * eine geratene URL zu verlinken (CLAUDE.md 4).
+   */
+  alternates?: Partial<Record<Locale, string>> | undefined;
+}
+
+const { alternates } = Astro.props;
+const current = getLocaleFromUrl(Astro.url);
+const t = useTranslations(current);
+
+const eintraege = locales.map((locale) => ({
+  locale,
+  pfad:
+    alternates === undefined ? switchLocalePath(Astro.url.pathname, locale) : alternates[locale],
+}));
+---
+
+{/* Reines HTML, kein JavaScript — der Umschalter ist ein Link, kein Widget. */}
+<nav aria-label={t('lang.label')}>
+  <ul>
+    {
+      eintraege.map(({ locale, pfad }) => (
+        <li>
+          {pfad === undefined ? (
+            <span lang={localeTags[locale]} aria-disabled="true">
+              {localeNames[locale]}
+              <span class="sr-only"> — {ui[locale]['lang.unavailable']}</span>
+            </span>
+          ) : (
+            <a
+              href={pfad}
+              hreflang={localeTags[locale]}
+              lang={localeTags[locale]}
+              aria-current={locale === current ? 'true' : undefined}
+            >
+              {localeNames[locale]}
+            </a>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</nav>
