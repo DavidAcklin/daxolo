@@ -100,7 +100,8 @@ jobs:
 
       # lhci laeuft bewusst per npx und steht nicht in package.json: sein
       # Abhaengigkeitsbaum wuerde sonst das Audit-Gate dauerhaft rot faerben.
-      # Chrome ist auf ubuntu-latest vorinstalliert.
+      # Die Version ist exakt gepinnt, damit die Gates nicht ueber Nacht
+      # wandern. Chrome ist auf ubuntu-latest vorinstalliert.
       - name: Lighthouse CI
         run: npm run lighthouse
 

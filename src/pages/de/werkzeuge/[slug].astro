@@ -3,14 +3,17 @@ import type { GetStaticPaths } from 'astro';
 import { render } from 'astro:content';
 import ToolLayout from '../../../layouts/ToolLayout.astro';
 import { useTranslations } from '../../../i18n/utils';
-import { alternatePfade, werkzeugRouten } from '../../../lib/werkzeuge';
+import { alternatePfade, erklaerungFuer, werkzeugRouten } from '../../../lib/werkzeuge';
 
 // `/de/werkzeuge/<slug>/` — Segment und Slug sind deutsch (CLAUDE.md 4).
 export const getStaticPaths = (() => werkzeugRouten('de')) satisfies GetStaticPaths;
 
 const { werkzeug, fassung } = Astro.props;
 const t = useTranslations('de');
-const { Content } = await render(werkzeug);
+
+// Erklaertext aus `<werkzeug-id>.de.md`. Fehlt die Datei, fehlt der Abschnitt.
+const erklaerung = await erklaerungFuer(werkzeug.id, 'de');
+const Erklaerung = erklaerung === undefined ? undefined : (await render(erklaerung)).Content;
 ---
 
 <ToolLayout
@@ -20,5 +23,5 @@ const { Content } = await render(werkzeug);
   haftungsausschluss={fassung.haftungsausschluss ? t('tool.disclaimer.text') : undefined}
 >
   {/* Hier kommt das Tool-Island hinein, sobald es eins gibt (CLAUDE.md 5). */}
-  <Content slot="erklaerung" />
+  {Erklaerung && <Erklaerung slot="erklaerung" />}
 </ToolLayout>

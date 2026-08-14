@@ -3,14 +3,16 @@ import type { GetStaticPaths } from 'astro';
 import { render } from 'astro:content';
 import ToolLayout from '../../../layouts/ToolLayout.astro';
 import { useTranslations } from '../../../i18n/utils';
-import { alternatePfade, werkzeugRouten } from '../../../lib/werkzeuge';
+import { alternatePfade, erklaerungFuer, werkzeugRouten } from '../../../lib/werkzeuge';
 
 // `/fr/outils/<slug>/` — Segment und Slug sind franzoesisch (CLAUDE.md 4).
 export const getStaticPaths = (() => werkzeugRouten('fr')) satisfies GetStaticPaths;
 
 const { werkzeug, fassung } = Astro.props;
 const t = useTranslations('fr');
-const { Content } = await render(werkzeug);
+
+const erklaerung = await erklaerungFuer(werkzeug.id, 'fr');
+const Erklaerung = erklaerung === undefined ? undefined : (await render(erklaerung)).Content;
 ---
 
 <ToolLayout
@@ -19,5 +21,5 @@ const { Content } = await render(werkzeug);
   alternates={alternatePfade(werkzeug)}
   haftungsausschluss={fassung.haftungsausschluss ? t('tool.disclaimer.text') : undefined}
 >
-  <Content slot="erklaerung" />
+  {Erklaerung && <Erklaerung slot="erklaerung" />}
 </ToolLayout>

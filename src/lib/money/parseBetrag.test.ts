@@ -108,7 +108,7 @@ describe('parseBetrag — klassische Fallstricke', () => {
   });
 
   it('rundet 1.005 nicht still, sondern meldet einen Fehler', () => {
-    expect(code('1.005')).toBe('zu-viele-nachkommastellen');
+    expect(code('1.005')).toBe('mehrdeutig');
   });
 
   it('nennt in der Meldung die auf Rappen gekuerzte Form', () => {
@@ -118,7 +118,31 @@ describe('parseBetrag — klassische Fallstricke', () => {
   });
 
   it('weist 1.000 ab, statt es als tausend oder eins zu raten', () => {
-    expect(code('1.000')).toBe('zu-viele-nachkommastellen');
+    expect(code('1.000')).toBe('mehrdeutig');
+  });
+
+  it('nennt bei mehrdeutiger Eingabe beide korrekten Schreibweisen', () => {
+    const ergebnis = parseBetrag('1.000');
+    expect(ergebnis.ok).toBe(false);
+    if (!ergebnis.ok) {
+      expect(ergebnis.nachricht).toContain("1'000");
+      expect(ergebnis.nachricht).toContain('1.00');
+    }
+  });
+
+  it('behandelt auch das Komma als mehrdeutig', () => {
+    expect(code('12,345')).toBe('mehrdeutig');
+    const ergebnis = parseBetrag('12,345');
+    if (!ergebnis.ok) expect(ergebnis.nachricht).toContain("12'345");
+  });
+
+  it('ist nur bei genau drei Nachkommastellen mehrdeutig', () => {
+    // Vier Stellen sind kein Tausendertrennzeichen, sondern zu viele Rappen.
+    expect(code('1.0055')).toBe('zu-viele-nachkommastellen');
+    // Fuehrende Null: als Tausender waere das 0'005 — keine plausible Lesart.
+    expect(code('0.005')).toBe('zu-viele-nachkommastellen');
+    // Vier Vorkommastellen passen in keine Dreiergruppe.
+    expect(code('1234.567')).toBe('zu-viele-nachkommastellen');
   });
 
   it('weist 1,000.50 ab — Komma ist kein Tausendertrennzeichen', () => {

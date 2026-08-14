@@ -1,4 +1,4 @@
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { locales, type Locale } from '../i18n/ui';
 import { toolPath } from '../i18n/utils';
 
@@ -10,6 +10,7 @@ import { toolPath } from '../i18n/utils';
  */
 
 export type Werkzeug = CollectionEntry<'tools'>;
+export type Erklaerung = CollectionEntry<'erklaerungen'>;
 
 /** Ein Werkzeug in genau einer Sprache, flach fuer die Anzeige. */
 export interface Werkzeugfassung {
@@ -76,6 +77,19 @@ export async function werkzeugRouten(
       ? []
       : [{ params: { slug: eintrag.slug }, props: { werkzeug, fassung: eintrag } }];
   });
+}
+
+/**
+ * Erklaertext eines Werkzeugs in einer Sprache (CLAUDE.md 5), oder `undefined`.
+ *
+ * Die Datei heisst `<werkzeug-id>.<sprache>.md`. Fehlt sie, fehlt der Text —
+ * das ist ein sichtbarer Zustand und kein Fehler.
+ */
+export async function erklaerungFuer(
+  werkzeugId: string,
+  locale: Locale,
+): Promise<Erklaerung | undefined> {
+  return getEntry('erklaerungen', `${werkzeugId}.${locale}`);
 }
 
 /**

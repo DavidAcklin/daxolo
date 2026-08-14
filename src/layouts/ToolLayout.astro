@@ -76,9 +76,16 @@ const standFormatiert =
       )
     }
 
-    <section aria-labelledby="erklaerung">
-      <h2 id="erklaerung">{t('tool.explanation.title')}</h2>
-      <slot name="erklaerung" />
-    </section>
+    {
+      /* Der Erklaertext liegt in der Collection `erklaerungen`. Fehlt die Datei
+         fuer diese Sprache, entfaellt der Abschnitt — statt einer leeren
+         Ueberschrift. */
+      Astro.slots.has('erklaerung') && (
+        <section aria-labelledby="erklaerung">
+          <h2 id="erklaerung">{t('tool.explanation.title')}</h2>
+          <slot name="erklaerung" />
+        </section>
+      )
+    }
   </article>
 </BaseLayout>

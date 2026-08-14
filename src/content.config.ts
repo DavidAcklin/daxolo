@@ -55,4 +55,21 @@ const tools = defineCollection({
   }),
 });
 
-export const collections = { tools };
+/**
+ * Erklaertexte (CLAUDE.md 5).
+ *
+ * Eine Datei je Sprache nach dem Schema `<slug>.<sprache>.md`, zum Beispiel
+ * `iban-pruefer.de.md`. Der `<slug>` ist die sprachneutrale Werkzeug-Id aus
+ * `tools`, nicht der uebersetzte Routen-Slug — sonst haengt der Dateiname an
+ * einer URL, die sich nie mehr aendern darf.
+ *
+ * Damit ist eine fehlende Uebersetzung eine fehlende Datei: sichtbar, ohne
+ * Sonderfall im Schema. Der Text steht im Markdown-Body (min. 150 Woerter), die
+ * Frontmatter bleibt leer.
+ */
+const erklaerungen = defineCollection({
+  loader: glob({ base: './src/content/erklaerungen', pattern: '**/*.md' }),
+  schema: z.object({}).strict(),
+});
+
+export const collections = { tools, erklaerungen };
