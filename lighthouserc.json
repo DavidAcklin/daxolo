@@ -9,7 +9,10 @@
         "http://localhost:4321/de/",
         "http://localhost:4321/fr/",
         "http://localhost:4321/en/",
-        "http://localhost:4321/de/werkzeuge/"
+        "http://localhost:4321/de/werkzeuge/",
+        "http://localhost:4321/de/werkzeuge/iban-pruefer/",
+        "http://localhost:4321/fr/outils/verificateur-iban/",
+        "http://localhost:4321/en/tools/iban-validator/"
       ]
     },
     "assert": {

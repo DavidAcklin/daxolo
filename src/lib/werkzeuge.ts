@@ -62,24 +62,6 @@ export async function werkzeugeFuer(locale: Locale): Promise<Werkzeugfassung[]> 
 }
 
 /**
- * Routen einer Sprache fuer `getStaticPaths`. Eine Seite entsteht nur dort, wo
- * es die Sprachfassung wirklich gibt — nie unter einem geratenen Slug.
- */
-export async function werkzeugRouten(
-  locale: Locale,
-): Promise<
-  { params: { slug: string }; props: { werkzeug: Werkzeug; fassung: Werkzeugfassung } }[]
-> {
-  const alle = await getCollection('tools', istSichtbar);
-  return alle.flatMap((werkzeug) => {
-    const eintrag = fassung(werkzeug, locale);
-    return eintrag === undefined
-      ? []
-      : [{ params: { slug: eintrag.slug }, props: { werkzeug, fassung: eintrag } }];
-  });
-}
-
-/**
  * Erklaertext eines Werkzeugs in einer Sprache (CLAUDE.md 5), oder `undefined`.
  *
  * Die Datei heisst `<werkzeug-id>.<sprache>.md`. Fehlt sie, fehlt der Text —

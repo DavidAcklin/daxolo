@@ -68,7 +68,13 @@ const tools = defineCollection({
  * Frontmatter bleibt leer.
  */
 const erklaerungen = defineCollection({
-  loader: glob({ base: './src/content/erklaerungen', pattern: '**/*.md' }),
+  loader: glob({
+    base: './src/content/erklaerungen',
+    pattern: '**/*.md',
+    // Die Id ist der Dateiname ohne Endung: `iban-pruefer.de`. Ohne das
+    // schluckt die Standard-Id den Punkt, und der Sprachteil geht verloren.
+    generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+  }),
   schema: z.object({}).strict(),
 });
 

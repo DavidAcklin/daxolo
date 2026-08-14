@@ -1,0 +1,91 @@
+---
+import Kachel from './Kachel.astro';
+
+/**
+ * Tabelle in einer Kachel (CLAUDE.md 6).
+ *
+ * Die Tabelle kommt als Ganzes in eine Kachel, Zeilen trennen Haarlinien —
+ * niemals eine Kachel je Datenzeile. Spalten mit Zahlen laufen in Monospace und
+ * rechtsbündig, damit Werte untereinander vergleichbar bleiben.
+ */
+export interface Spalte {
+  name: string;
+  /** Zahlenspalte: Monospace, rechtsbündig, gleiche Ziffernbreite. */
+  zahl?: boolean;
+}
+
+interface Props {
+  titel?: string | undefined;
+  hinweis?: string | undefined;
+  spalten: Spalte[];
+  zeilen: string[][];
+  /** Kopfzeile ausblenden, wenn die Tabelle Feld und Wert paarweise zeigt. */
+  kopfVerbergen?: boolean | undefined;
+}
+
+const { titel, hinweis, spalten, zeilen, kopfVerbergen } = Astro.props;
+---
+
+<Kachel titel={titel} hinweis={hinweis}>
+  <table>
+    <thead class={kopfVerbergen ? 'sr-only' : undefined}>
+      <tr>
+        {
+          spalten.map((spalte) => (
+            <th scope="col" class={spalte.zahl ? 'zahl-kopf' : undefined}>
+              {spalte.name}
+            </th>
+          ))
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {
+        zeilen.map((zeile) => (
+          <tr>
+            {zeile.map((zelle, i) => (
+              <td class={spalten[i]?.zahl ? 'zahl' : undefined}>{zelle}</td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</Kachel>
+
+<style>
+  table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-basis);
+  }
+
+  th {
+    text-align: start;
+    font-weight: 500;
+    font-size: var(--text-klein);
+    color: var(--text-sekundaer);
+    padding-block: var(--spacing-eng);
+  }
+
+  th.zahl-kopf {
+    text-align: end;
+  }
+
+  td {
+    padding-block: var(--spacing-eng);
+    /* Haarlinie statt Rahmen. */
+    border-block-start: 1px solid var(--linie);
+    vertical-align: baseline;
+  }
+
+  tbody tr:first-child td {
+    border-block-start: none;
+  }
+
+  td.zahl {
+    text-align: end;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
