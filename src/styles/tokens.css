@@ -1,0 +1,13 @@
+/*
+ * Design-Tokens (CLAUDE.md 3).
+ *
+ * Absichtlich leer: Das Design-System kommt in einem eigenen Schritt. Sobald es
+ * existiert, stehen Farben, Abstaende, Schriftgroessen und Radien ausschliesslich
+ * hier — im Markup gibt es keine rohen Hex-Werte.
+ *
+ * Kontrast mindestens 4.5:1 in beiden Themes (CLAUDE.md 6).
+ */
+
+@theme {
+  /* noch keine Tokens definiert */
+}

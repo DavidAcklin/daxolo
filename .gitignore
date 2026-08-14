@@ -1,0 +1,34 @@
+# Build-Artefakte
+dist/
+.astro/
+.output/
+
+# Abhängigkeiten
+node_modules/
+
+# Tests
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+coverage/
+.lighthouseci/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Private Dokumente gehoeren nicht in ein Repository, das oeffentlich werden kann
+/26-27 Domainrechnung.pdf
+
+# Lokale Umgebung
+.env
+.env.production
+.env.local

@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations, werkzeugePath } from '../../i18n/utils';
+
+const t = useTranslations('fr');
+---
+
+<BaseLayout title={t('site.name')} description={t('site.tagline')}>
+  <h1>{t('site.name')}</h1>
+  <p>{t('site.tagline')}</p>
+  <p><a href={werkzeugePath('fr')}>{t('nav.tools')}</a></p>
+</BaseLayout>

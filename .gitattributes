@@ -1,0 +1,9 @@
+# Zeilenenden bleiben ueberall LF — im Repository und in der Arbeitskopie.
+# Ohne das erzeugt eine Windows-Auscheckung CRLF, und `prettier --check` schlaegt
+# lokal fehl, obwohl die CI unter Linux gruen ist.
+* text=auto eol=lf
+
+*.pdf binary
+*.png binary
+*.jpg binary
+*.woff2 binary
