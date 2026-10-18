@@ -207,3 +207,13 @@ test('die Tabellenzeile "Art" nennt die konventionelle IBAN', async ({ page }) =
   await page.goto('/de/werkzeuge/iban-pruefer/');
   await expect(page.locator('#iban-werte')).toContainText('Konventionelle IBAN');
 });
+
+test('Umschalter und sekundaerer Knopf sind mit der gepruften Rolle --feld-rahmen begrenzt', async ({
+  page,
+}) => {
+  await page.goto('/de/werkzeuge/iban-pruefer/');
+  // Hell ist --feld-rahmen #8d8188. Beide Begrenzungen fallen unter WCAG 1.4.11.
+  const feldRahmen = 'rgb(141, 129, 136)';
+  await expect(page.locator('[data-modus-umschalter]')).toHaveCSS('border-top-color', feldRahmen);
+  await expect(page.locator('#iban-kopieren')).toHaveCSS('border-top-color', feldRahmen);
+});

@@ -10,10 +10,10 @@
  * nicht die Flächen untereinander — Marken- und Fehlerfläche hell waren nicht zu
  * unterscheiden, genau das, wovor CLAUDE.md 6 warnt.
  *
- * Geprüft je Modus: 26 Textpaare (≥ 4.5:1), 13 Paare für Rahmen, Fokusring,
- * Hauptknopf und Auswahlmarkierung (≥ 3:1, gegen jede angrenzende Fläche) und
- * 10 Paare bedeutungstragender Flächen (ΔE00 nach CIEDE2000 ≥ 8). Alle
- * bestanden. Die Werte in den Kommentaren sind das Minimum über alle geprüften
+ * Geprüft je Modus: 26 Textpaare (≥ 4.5:1), 17 Paare für Rahmen, Fokusring,
+ * Hauptknopf, Auswahlmarkierung und die Begrenzungen von Umschalter und
+ * sekundärem Knopf (≥ 3:1, gegen jede angrenzende Fläche) und 10 Paare
+ * bedeutungstragender Flächen (ΔE00 nach CIEDE2000 ≥ 8). Alle bestanden. Die Werte in den Kommentaren sind das Minimum über alle geprüften
  * Flächen.
  *
  * Rechenweg im Projekt reproduzierbar: src/styles/tokens.test.ts, läuft mit
@@ -126,7 +126,10 @@
   --text-platzhalter: var(--color-neutral-450); /*  5.69:1 im Feld */
 
   --linie: var(--color-neutral-100); /* nur dekorative Trennung */
+  /* Nur für Trennungen, nie als Begrenzung eines Bedienelements — dafür gilt
+     --feld-rahmen. Zurzeit ohne Verwendung (Ausnahmeregister im Farbtest). */
   --linie-stark: var(--color-neutral-200);
+  /* Begrenzung von Bedienelementen: Feld, Farbmodus-Umschalter, sekundärer Knopf. */
   --feld-rahmen: var(--color-neutral-350); /*  3.32:1 auf Kachel — WCAG 1.4.11 */
 
   --marke-flaeche: var(--color-marke-50);

@@ -13,8 +13,9 @@ import { farbabstand, kontrast } from './farbmass';
  * 2. Den Abstand bedeutungstragender Flächen untereinander: ΔE00 ≥ 8.
  *
  * Die Paare bilden ab, wo eine Rolle tatsächlich steht. Jede Farbrolle muss
- * einem Paar zugeordnet oder ausdrücklich als dekorativ begründet sein — eine
- * neue Rolle fällt sonst durch.
+ * einem Paar zugeordnet oder im Ausnahmeregister an dessen Kriterium begründet
+ * sein — eine neue Rolle fällt sonst durch. Würde eine Prüfung rot, wird die
+ * Farbe korrigiert, nicht die Prüfung eingegrenzt.
  *
  * `FARBBERICHT=1 npx vitest run src/styles/tokens.test.ts` gibt alle Messwerte
  * aus — so entstehen die Werte in den Kommentaren von tokens.css.
@@ -41,7 +42,11 @@ function block(kopf: RegExp): Rollen {
   }
   const inhalt = quelle.slice(quelle.indexOf('{', treffer.index) + 1, ende);
   return Object.fromEntries(
-    [...inhalt.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].map((d) => [d[1], (d[2] ?? '').trim()]),
+    // Prettier bricht lange Werte um; Leerraum zählt nicht.
+    [...inhalt.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].map((d) => [
+      d[1],
+      (d[2] ?? '').replace(/\s+/g, ' ').trim(),
+    ]),
   );
 }
 
@@ -56,7 +61,7 @@ function farbe(rollen: Rollen, name: string, kette: string[] = []): string {
   if (kette.includes(name)) throw new Error(`Zirkelbezug: ${[...kette, name].join(' → ')}`);
   const wert = rollen[name] ?? theme[name];
   if (wert === undefined) throw new Error(`Rolle --${name} fehlt in tokens.css`);
-  const verweis = /^var\(--([\w-]+)\)$/.exec(wert);
+  const verweis = /^var\(\s*--([\w-]+)\s*\)$/.exec(wert);
   return verweis === null ? wert.toLowerCase() : farbe(rollen, verweis[1] ?? '', [...kette, name]);
 }
 
@@ -103,6 +108,12 @@ const NICHT_TEXT: Paar[] = [
   // Seite kaum ab — sie ist Zusatz, nicht das Merkmal, das die Auswahl trägt.
   ['marke-aktion', 'marke-flaeche', 'Auswahlmarkierung Farbmodus'],
   ['marke-aktion', 'flaeche-seite', 'Auswahlmarkierung Farbmodus'],
+  // Begrenzungen von Bedienelementen ohne eigene Fläche (WCAG 1.4.11). Der
+  // Umschalter steht im Kopf auf der Seite und hat innen keine Fläche.
+  ['feld-rahmen', 'flaeche-seite', 'Begrenzung Farbmodus-Umschalter'],
+  // Der sekundäre Knopf ist ein Bauteil für Seite und Kachel; beim Hover füllt
+  // er sich mit der Feldfläche.
+  ...aufNeutral('feld-rahmen', 'Begrenzung sekundärer Knopf'),
 ];
 
 /** Bedeutungstragende Flächen: Marke und Status. Jedes Paar untereinander, ΔE00 ≥ 8. */
@@ -117,10 +128,36 @@ const FLAECHENPAARE = BEDEUTUNG.flatMap((a, i) =>
   BEDEUTUNG.slice(i + 1).map((b) => [a, b] as const),
 );
 
-/** Ohne Bedeutung: tragen keine Information, die nicht auch anders dasteht. */
-const DEKORATIV: Record<string, string> = {
-  linie: 'Haarlinie zwischen Tabellenzeilen und Abschnitten',
-  'linie-stark': 'Rahmen um Farbmodus-Umschalter und sekundären Knopf; beide tragen Text',
+/**
+ * Ausnahmeregister. Kriterium (CLAUDE.md 6): Eine Farbrolle ist nur dann
+ * dekorativ, wenn die Oberfläche ohne sie vollständig bedienbar bleibt und jede
+ * Komponente erkennbar ist. Jede Ausnahme begründet beide Teile einzeln — das
+ * Wort "dekorativ" allein genügt nicht.
+ */
+interface Ausnahme {
+  /** Wo die Rolle steht. */
+  verwendung: string;
+  /** Warum die Oberfläche ohne sie vollständig bedienbar bleibt. */
+  bedienbar: string;
+  /** Warum jede Komponente ohne sie erkennbar bleibt. */
+  erkennbar: string;
+}
+
+const AUSNAHMEN: Record<string, Ausnahme> = {
+  linie: {
+    verwendung: 'Haarlinien zwischen Tabellenzeilen, über dem Erklärtext und über dem Fuss.',
+    bedienbar: 'Sie trennt nur und begrenzt kein Bedienelement; keine Bedienung hängt an ihr.',
+    erkennbar:
+      'Tabellenzeilen bleiben über Zeilenkopf, Ausrichtung und Abstand erkennbar, ' +
+      'Erklärtext und Fuss über Überschrift und Abstand.',
+  },
+  'linie-stark': {
+    verwendung:
+      'Zurzeit keine. Vorgesehen nur für Trennungen; Begrenzungen von Bedienelementen ' +
+      'nutzen --feld-rahmen.',
+    bedienbar: 'Sie steht an keinem Bedienelement.',
+    erkennbar: 'Keine Komponente ist auf sie angewiesen.',
+  },
 };
 
 const messwerte: string[] = [];
@@ -167,14 +204,35 @@ describe.each(MODI)('Farbprüfung %s', (modus, rollen) => {
 });
 
 describe('Vollständigkeit', () => {
-  it('ordnet jede Farbrolle einem Paar zu oder begründet, warum sie dekorativ ist', () => {
+  it('ordnet jede Farbrolle einem Paar oder dem Ausnahmeregister zu', () => {
     const geprueft = new Set(
       [...TEXT, ...NICHT_TEXT, ...FLAECHENPAARE].flatMap(([vorder, hinter]) => [vorder, hinter]),
     );
     const offen = Object.keys(hell).filter(
-      (name) => /^#/.test(farbe(hell, name)) && !geprueft.has(name) && !(name in DEKORATIV),
+      (name) => /^#/.test(farbe(hell, name)) && !geprueft.has(name) && !(name in AUSNAHMEN),
     );
     expect(offen, `Farbrollen ohne Paar: ${offen.join(', ')}`).toEqual([]);
+  });
+
+  it('begründet jede Ausnahme an beiden Teilen des Kriteriums', () => {
+    for (const [name, a] of Object.entries(AUSNAHMEN)) {
+      expect(a.verwendung.trim(), `--${name}: Verwendung fehlt`).not.toBe('');
+      expect(a.bedienbar.trim(), `--${name}: warum bedienbar ohne sie?`).not.toBe('');
+      expect(a.erkennbar.trim(), `--${name}: warum erkennbar ohne sie?`).not.toBe('');
+      for (const begruendung of [a.bedienbar, a.erkennbar]) {
+        expect(begruendung, `--${name}: "dekorativ" ist keine Begründung`).not.toMatch(
+          /^\s*dekorativ\.?\s*$/i,
+        );
+      }
+    }
+  });
+
+  it('führt keine Rolle zugleich in einem Paar und im Ausnahmeregister', () => {
+    const geprueft = new Set(
+      [...TEXT, ...NICHT_TEXT, ...FLAECHENPAARE].flatMap(([vorder, hinter]) => [vorder, hinter]),
+    );
+    const doppelt = Object.keys(AUSNAHMEN).filter((name) => geprueft.has(name));
+    expect(doppelt, `Geprüft und zugleich Ausnahme: ${doppelt.join(', ')}`).toEqual([]);
   });
 
   it('definiert den dunklen Modus zweimal gleich: für "automatisch" und für data-modus="dunkel"', () => {

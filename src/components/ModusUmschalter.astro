@@ -84,7 +84,8 @@ const optionen = [
   .umschalter {
     display: flex;
     gap: 0.15rem;
-    border: 1px solid var(--linie-stark);
+    /* Begrenzung eines Bedienelements (WCAG 1.4.11): geprüfte Rolle. */
+    border: 1px solid var(--feld-rahmen);
     border-radius: var(--radius-pille);
     padding: 0.15rem;
     margin: 0;

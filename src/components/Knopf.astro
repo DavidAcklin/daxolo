@@ -44,9 +44,11 @@ const { art = 'primaer', typ = 'button', id, beschriftung } = Astro.props;
     background-color: var(--marke-aktion-hover);
   }
 
+  /* Ohne Fläche ist der Rahmen die Begrenzung des Knopfs: WCAG 1.4.11, also
+     die geprüfte Rolle --feld-rahmen. */
   .sekundaer {
     background-color: transparent;
-    border-color: var(--linie-stark);
+    border-color: var(--feld-rahmen);
     color: var(--text-primaer);
   }
 
