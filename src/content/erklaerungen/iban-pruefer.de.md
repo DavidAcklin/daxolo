@@ -22,10 +22,11 @@ rein rechnerisch.
 Formal unterscheiden sich IBAN und QR-IBAN nicht; beide folgen ISO 13616. Der Unterschied
 steckt an Stelle 5 bis 9, in der Instituts-Identifikation (IID, die Nummer der Bank). Liegt
 sie im Bereich 30000 bis 31999, handelt es sich um eine QR-IID und damit um eine QR-IBAN.
-Diese Nummern sind für das Verfahren mit QR-Referenz reserviert: Eine QR-IBAN verlangt
-zwingend eine QR-Referenz, eine konventionelle IBAN (die übliche Form ohne QR-IID) schliesst
-sie aus. Wer beides vertauscht, produziert Rechnungen, die Banken zurückweisen. Eine QR-IBAN
-dient ausserdem nur Zahlungseingängen.
+Diese Nummern sind für das Verfahren mit <span class="umbruchfrei">QR-Referenz</span>
+reserviert: Eine QR-IBAN verlangt zwingend eine <span class="umbruchfrei">QR-Referenz</span>,
+eine konventionelle IBAN (die übliche Form ohne QR-IID) schliesst sie aus. Wer beides
+vertauscht, produziert Rechnungen, die Banken zurückweisen. Eine QR-IBAN dient ausserdem nur
+Zahlungseingängen.
 
 ### Warum das Konto trotzdem nicht existieren muss
 

@@ -6,6 +6,7 @@ import type { Zelle } from '../../components/tabellenzeilen';
 import Knopf from '../../components/Knopf.astro';
 import Statusblock from '../../components/Statusblock.astro';
 import type { Locale } from '../../i18n/ui';
+import { segmente } from '../../i18n/umbruch';
 import { BEISPIEL_IBAN, befund, type Zeile } from './logic';
 import { formatiere, texte, type TextKey } from './texte';
 
@@ -89,7 +90,11 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
       {
         urteil !== undefined &&
           urteil.texte.map((schluessel) => (
-            <p data-text>{formatiere(t[schluessel], urteil.werte)}</p>
+            <p data-text>
+              {segmente(formatiere(t[schluessel], urteil.werte)).map((s) =>
+                s.umbruchfrei ? <span class="umbruchfrei">{s.text}</span> : s.text,
+              )}
+            </p>
           ))
       }
     </Statusblock>
@@ -112,6 +117,7 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
 
 <script>
   import { ersetzeZeilen } from '../../components/tabellenzeilen';
+  import { segmente } from '../../i18n/umbruch';
   import { befund, type Befund } from './logic';
   import { formatiere } from './texte';
 
@@ -144,6 +150,20 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
     // Text. Deshalb nur schreiben, was wirklich neu ist.
     const setze = (element: HTMLElement | null, neu: string) => {
       if (element !== null && element.textContent !== neu) element.textContent = neu;
+    };
+
+    // Text mit umbruchfreien Begriffen (src/i18n/umbruch.ts); dieselben Segmente
+    // wie beim Rendern im Build.
+    const fuelle = (element: HTMLElement, inhalt: string) => {
+      element.replaceChildren(
+        ...segmente(inhalt).map((s) => {
+          if (!s.umbruchfrei) return document.createTextNode(s.text);
+          const span = document.createElement('span');
+          span.className = 'umbruchfrei';
+          span.textContent = s.text;
+          return span;
+        }),
+      );
     };
 
     const zeigeAmFeld = (ergebnis: Befund | undefined) => {
@@ -182,7 +202,7 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
         erlaeuterungen.forEach((satz, i) => {
           const absatz = vorhanden[i] ?? inhalt.appendChild(document.createElement('p'));
           absatz.dataset['text'] = '';
-          absatz.textContent = satz;
+          fuelle(absatz, satz);
         });
         vorhanden.slice(erlaeuterungen.length).forEach((absatz) => absatz.remove());
       }

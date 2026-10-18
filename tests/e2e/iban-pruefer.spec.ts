@@ -184,3 +184,26 @@ test('im Kontrastmodus (forced-colors) bleibt die Auswahl im Farbmodus-Umschalte
   expect(await rahmen('automatisch')).not.toBe(await rahmen('hell'));
   expect(await rahmen('hell')).toBe(await rahmen('dunkel'));
 });
+
+test('"QR-Referenz" bricht nie am Bindestrich um, auch nicht im ersetzten Text', async ({
+  page,
+}) => {
+  await page.goto('/de/werkzeuge/iban-pruefer/');
+  const pruefe = async () => {
+    const begriff = page.locator('.status .umbruchfrei');
+    await expect(begriff).toHaveText('QR-Referenz');
+    await expect(begriff).toHaveCSS('white-space', 'nowrap');
+  };
+
+  await pruefe(); // aus dem Build: konventionelle IBAN
+  await page.locator('#iban-eingabe').fill('CH44 3199 9123 0008 8901 2');
+  await expect(page.locator('.status')).toContainText('QR-IBAN');
+  await pruefe(); // aus dem Skript: QR-IBAN
+
+  await expect(page.locator('.erklaerung .umbruchfrei').first()).toHaveCSS('white-space', 'nowrap');
+});
+
+test('die Tabellenzeile "Art" nennt die konventionelle IBAN', async ({ page }) => {
+  await page.goto('/de/werkzeuge/iban-pruefer/');
+  await expect(page.locator('#iban-werte')).toContainText('Konventionelle IBAN');
+});

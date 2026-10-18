@@ -99,6 +99,12 @@
 }
 
 @layer components {
+  /* Begriffe, die nie am Bindestrich umbrechen (src/i18n/umbruch.ts). Global,
+     weil auch Werkzeug-Skripte solche Stellen erzeugen. */
+  .umbruchfrei {
+    white-space: nowrap;
+  }
+
   /* Seitenraster: eine Spalte, Lesebreite begrenzt. */
   .seite {
     margin-inline: auto;
