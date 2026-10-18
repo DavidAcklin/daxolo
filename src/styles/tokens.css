@@ -10,17 +10,19 @@
  * nicht die Flächen untereinander — Marken- und Fehlerfläche hell waren nicht zu
  * unterscheiden, genau das, wovor CLAUDE.md 6 warnt.
  *
- * Geprüft je Modus: 26 Textpaare (≥ 4.5:1), 11 Paare für Rahmen, Fokusring und
- * Hauptknopf (≥ 3:1, gegen jede angrenzende Fläche) und 10 Paare bedeutungs-
- * tragender Flächen (ΔE00 nach CIEDE2000 ≥ 8). Alle bestanden. Die Werte in den
- * Kommentaren sind das Minimum über alle geprüften Flächen.
+ * Geprüft je Modus: 26 Textpaare (≥ 4.5:1), 13 Paare für Rahmen, Fokusring,
+ * Hauptknopf und Auswahlmarkierung (≥ 3:1, gegen jede angrenzende Fläche) und
+ * 10 Paare bedeutungstragender Flächen (ΔE00 nach CIEDE2000 ≥ 8). Alle
+ * bestanden. Die Werte in den Kommentaren sind das Minimum über alle geprüften
+ * Flächen.
  *
  * Rechenweg im Projekt reproduzierbar: src/styles/tokens.test.ts, läuft mit
  * `npm test` als CI-Gate. `FARBBERICHT=1 npx vitest run src/styles/tokens.test.ts`
  * gibt alle Messwerte aus.
  *
  * Knappste Werte: Text auf dem Hauptknopf dunkel 4.65:1, Platzhalter dunkel
- * 4.88:1, Feldrahmen hell 3.32:1, Marke/Fehler hell ΔE00 10.4.
+ * 4.88:1, Feldrahmen hell 3.32:1, Auswahlmarkierung dunkel auf gewählter Fläche
+ * 3.87:1, Marke/Fehler hell ΔE00 10.4.
  *
  * Grundregel hinter den Statusfarben: Rosa drückt die Fehlerfläche nach Orange,
  * und dort sass die Warnung. Deshalb ist die Warnfläche nach Gelb gerückt.
@@ -104,6 +106,10 @@
   /* Fehlerrahmen doppelt so breit wie der normale Feldrahmen, in beiden Modi:
      neben dem Fokusring muss der Fehlerzustand erkennbar bleiben. */
   --fehler-rahmen-breite: 2px;
+
+  /* Markierung des gewählten Eintrags, etwa im Farbmodus-Umschalter. Sie trägt
+     die Auswahl unabhängig von der Farbe der Fläche. */
+  --auswahl-breite: 2px;
 }
 
 /* ---------- Rollen: hell ---------- */

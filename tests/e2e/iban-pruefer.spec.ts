@@ -147,3 +147,40 @@ test('die Werkzeug-Uebersicht listet den Pruefer in jeder Sprache', async ({ pag
     await expect(page.getByRole('link', { name: /IBAN/i }).first()).toBeVisible();
   }
 });
+
+test('der gewaehlte Farbmodus traegt eine Markierung, die nicht von der Farbe abhaengt', async ({
+  page,
+}) => {
+  await page.goto('/de/werkzeuge/iban-pruefer/');
+  const markierung = (wert: string) =>
+    page.locator(`label[for="modus-${wert}"]`).evaluate((label) => {
+      const s = getComputedStyle(label);
+      return { breite: s.borderTopWidth, farbe: s.borderTopColor };
+    });
+
+  // Hell, "automatisch" gewaehlt: 2 px in --marke-aktion (#993556), die anderen transparent.
+  expect(await markierung('automatisch')).toEqual({ breite: '2px', farbe: 'rgb(153, 53, 86)' });
+  expect((await markierung('dunkel')).farbe).toBe('rgba(0, 0, 0, 0)');
+
+  // Den Zustand fuer Screenreader traegt das Radio selbst.
+  await expect(page.getByRole('radio', { name: 'Automatisch', checked: true })).toBeVisible();
+  await page.getByLabel('Dunkel').check();
+  await expect(page.getByRole('radio', { name: 'Dunkel', checked: true })).toBeAttached();
+  await expect(page.getByRole('radio', { name: 'Automatisch', checked: false })).toBeAttached();
+  // Dunkel: --marke-aktion ist #d4537e.
+  expect(await markierung('dunkel')).toEqual({ breite: '2px', farbe: 'rgb(212, 83, 126)' });
+});
+
+test('im Kontrastmodus (forced-colors) bleibt die Auswahl im Farbmodus-Umschalter sichtbar', async ({
+  page,
+}) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  await page.goto('/de/werkzeuge/iban-pruefer/');
+  const rahmen = (wert: string) =>
+    page
+      .locator(`label[for="modus-${wert}"]`)
+      .evaluate((label) => getComputedStyle(label).borderTopColor);
+  // Gewählt: Highlight. Nicht gewählt: Canvas — gleich untereinander, verschieden zur Auswahl.
+  expect(await rahmen('automatisch')).not.toBe(await rahmen('hell'));
+  expect(await rahmen('hell')).toBe(await rahmen('dunkel'));
+});

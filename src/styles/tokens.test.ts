@@ -61,40 +61,48 @@ function farbe(rollen: Rollen, name: string, kette: string[] = []): string {
 }
 
 const NEUTRAL = ['flaeche-seite', 'flaeche-kachel', 'flaeche-innen'] as const;
-const aufNeutral = (vorder: string) => NEUTRAL.map((hinter) => [vorder, hinter] as const);
+
+/** Vordergrund, Hintergrund, wofür das Paar steht. */
+type Paar = readonly [vorder: string, hinter: string, zweck: string];
+const aufNeutral = (vorder: string, zweck: string): Paar[] =>
+  NEUTRAL.map((hinter) => [vorder, hinter, zweck] as const);
 
 /** Text, 4.5:1. */
-const TEXT: (readonly [string, string])[] = [
-  ...aufNeutral('text-primaer'),
-  ...aufNeutral('text-sekundaer'),
-  ...aufNeutral('text-gedaempft'),
-  ['text-platzhalter', 'flaeche-innen'], // nur im Feld
-  ...aufNeutral('marke-link'),
-  ...aufNeutral('marke-aktion-hover'), // Linkfarbe beim Hover
-  ['marke-aktion-text', 'marke-aktion'], // Hauptknopf
-  ['marke-aktion-text', 'marke-aktion-hover'], // Hauptknopf beim Hover
-  ['marke-text-auf-flaeche', 'marke-flaeche'], // gewählter Farbmodus
+const TEXT: Paar[] = [
+  ...aufNeutral('text-primaer', 'Fliesstext'),
+  ...aufNeutral('text-sekundaer', 'Hilfstext, nicht gewählter Farbmodus'),
+  ...aufNeutral('text-gedaempft', 'gedämpfter Text'),
+  ['text-platzhalter', 'flaeche-innen', 'Platzhalter im Feld'],
+  ...aufNeutral('marke-link', 'Link'),
+  ...aufNeutral('marke-aktion-hover', 'Link beim Hover'),
+  ['marke-aktion-text', 'marke-aktion', 'Hauptknopf'],
+  ['marke-aktion-text', 'marke-aktion-hover', 'Hauptknopf beim Hover'],
+  ['marke-text-auf-flaeche', 'marke-flaeche', 'gewählter Farbmodus'],
   // Statusblock. Sein Symbol nutzt dieselbe Farbe und ist damit mit abgedeckt.
-  ['erfolg-text', 'erfolg-flaeche'],
-  ['warnung-text', 'warnung-flaeche'],
-  ['fehler-text', 'fehler-flaeche'],
-  // Meldungen ausserhalb des Statusblocks: Feldfehler, Kopierbestätigung.
-  ['erfolg-text', 'flaeche-seite'],
-  ['erfolg-text', 'flaeche-kachel'],
-  ['fehler-text', 'flaeche-seite'],
-  ['fehler-text', 'flaeche-kachel'],
+  ['erfolg-text', 'erfolg-flaeche', 'Statusblock Erfolg'],
+  ['warnung-text', 'warnung-flaeche', 'Statusblock Warnung'],
+  ['fehler-text', 'fehler-flaeche', 'Statusblock Fehler'],
+  ['erfolg-text', 'flaeche-seite', 'Kopierbestätigung'],
+  ['erfolg-text', 'flaeche-kachel', 'Kopierbestätigung'],
+  ['fehler-text', 'flaeche-seite', 'Feldfehler'],
+  ['fehler-text', 'flaeche-kachel', 'Feldfehler'],
 ];
 
 /** Rahmen, Fokusring, bedeutungstragende Grafik, 3:1 — je gegen jede angrenzende Fläche. */
-const NICHT_TEXT: (readonly [string, string])[] = [
+const NICHT_TEXT: Paar[] = [
   // Feldrahmen: innen das Feld, aussen Kachel oder Seite.
-  ...aufNeutral('feld-rahmen'),
-  ...aufNeutral('fehler-rahmen'),
+  ...aufNeutral('feld-rahmen', 'Feldrahmen'),
+  ...aufNeutral('fehler-rahmen', 'Fehlerrahmen'),
   // Der Ring liegt mit Versatz auf der Fläche um das fokussierte Element.
-  ...aufNeutral('fokus-ring'),
-  // Fläche des Hauptknopfs auf Seite und Kachel.
-  ['marke-aktion', 'flaeche-seite'],
-  ['marke-aktion', 'flaeche-kachel'],
+  ...aufNeutral('fokus-ring', 'Fokusring'),
+  ['marke-aktion', 'flaeche-seite', 'Hauptknopf'],
+  ['marke-aktion', 'flaeche-kachel', 'Hauptknopf'],
+  // Gewählter Farbmodus: Die 2-px-Markierung trägt die Auswahl ohne Farbe.
+  // Innen grenzt sie an die gewählte Fläche, aussen an die Seite (der
+  // Umschalter selbst hat keine Fläche). Die gewählte Fläche hebt sich von der
+  // Seite kaum ab — sie ist Zusatz, nicht das Merkmal, das die Auswahl trägt.
+  ['marke-aktion', 'marke-flaeche', 'Auswahlmarkierung Farbmodus'],
+  ['marke-aktion', 'flaeche-seite', 'Auswahlmarkierung Farbmodus'],
 ];
 
 /** Bedeutungstragende Flächen: Marke und Status. Jedes Paar untereinander, ΔE00 ≥ 8. */
@@ -126,25 +134,25 @@ const MODI = [
 ] as const;
 
 describe.each(MODI)('Farbprüfung %s', (modus, rollen) => {
-  it.each(TEXT)('Text: %s auf %s ≥ 4.5:1', (vorder, hinter) => {
+  it.each(TEXT)('Text: %s auf %s ≥ 4.5:1 (%s)', (vorder, hinter, zweck) => {
     const ist = kontrast(farbe(rollen, vorder), farbe(rollen, hinter));
     messwerte.push(
-      `${modus.padEnd(6)} Text    ${`${vorder} auf ${hinter}`.padEnd(44)} ${ist.toFixed(2)}:1`,
+      `${modus.padEnd(6)} Text    ${`${vorder} auf ${hinter}`.padEnd(44)} ${ist.toFixed(2).padStart(5)}:1  ${zweck}`,
     );
     expect(
       ist,
-      `${modus}: ${vorder} auf ${hinter} — Ist ${ist.toFixed(2)}:1, Soll ≥ 4.5:1`,
+      `${modus}: ${vorder} auf ${hinter} (${zweck}) — Ist ${ist.toFixed(2)}:1, Soll ≥ 4.5:1`,
     ).toBeGreaterThanOrEqual(4.5);
   });
 
-  it.each(NICHT_TEXT)('Rahmen/Grafik: %s gegen %s ≥ 3:1', (vorder, hinter) => {
+  it.each(NICHT_TEXT)('Rahmen/Grafik: %s gegen %s ≥ 3:1 (%s)', (vorder, hinter, zweck) => {
     const ist = kontrast(farbe(rollen, vorder), farbe(rollen, hinter));
     messwerte.push(
-      `${modus.padEnd(6)} Rahmen  ${`${vorder} gegen ${hinter}`.padEnd(44)} ${ist.toFixed(2)}:1`,
+      `${modus.padEnd(6)} Rahmen  ${`${vorder} gegen ${hinter}`.padEnd(44)} ${ist.toFixed(2).padStart(5)}:1  ${zweck}`,
     );
     expect(
       ist,
-      `${modus}: ${vorder} gegen ${hinter} — Ist ${ist.toFixed(2)}:1, Soll ≥ 3:1`,
+      `${modus}: ${vorder} gegen ${hinter} (${zweck}) — Ist ${ist.toFixed(2)}:1, Soll ≥ 3:1`,
     ).toBeGreaterThanOrEqual(3);
   });
 
@@ -160,7 +168,9 @@ describe.each(MODI)('Farbprüfung %s', (modus, rollen) => {
 
 describe('Vollständigkeit', () => {
   it('ordnet jede Farbrolle einem Paar zu oder begründet, warum sie dekorativ ist', () => {
-    const geprueft = new Set([...TEXT, ...NICHT_TEXT, ...FLAECHENPAARE].flat());
+    const geprueft = new Set(
+      [...TEXT, ...NICHT_TEXT, ...FLAECHENPAARE].flatMap(([vorder, hinter]) => [vorder, hinter]),
+    );
     const offen = Object.keys(hell).filter(
       (name) => /^#/.test(farbe(hell, name)) && !geprueft.has(name) && !(name in DEKORATIV),
     );

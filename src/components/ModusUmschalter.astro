@@ -20,6 +20,11 @@ import { getLocaleFromUrl, useTranslations } from '../i18n/utils';
  * gleicht erst das Modulskript an, und das läuft nach dem ersten Zeichnen.
  * Hinge die Markierung am Radio, spränge sie beim Laden von "automatisch" auf
  * den gespeicherten Modus.
+ *
+ * Den gewählten Eintrag tragen drei Merkmale: Fläche und Text in Markenfarbe,
+ * dazu ein 2-px-Rahmen in `--marke-aktion`. Der Rahmen ist das Merkmal, das
+ * ohne Farbwahrnehmung trägt; seine Kontraste prüft der Farbtest. Den Zustand
+ * für Screenreader liefert das Radio selbst (`checked`).
  */
 const locale: Locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -105,6 +110,9 @@ const optionen = [
     font-size: var(--text-klein);
     color: var(--text-sekundaer);
     cursor: pointer;
+    /* Platz für die Auswahlmarkierung in jedem Eintrag: so verschiebt der
+       Wechsel der Auswahl nichts. */
+    border: var(--auswahl-breite) solid transparent;
   }
 
   /* Breite der fetten Fassung reservieren: sonst verschiebt der Wechsel des
@@ -125,11 +133,32 @@ const optionen = [
     background-color: var(--marke-flaeche);
     color: var(--marke-text-auf-flaeche);
     font-weight: 500;
+    border-color: var(--marke-aktion);
   }
 
   /* Das Radio ist unsichtbar, also trägt das Label den Fokusring. */
   input:focus-visible + label {
     outline: var(--fokus-breite) solid var(--fokus-ring);
     outline-offset: var(--fokus-versatz);
+  }
+
+  /* Kontrastmodus (forced-colors): Der Browser ersetzt Farben durch Systemfarben
+     und zeigt dabei auch transparente Rahmen an. Ohne eigene Regel hätten alle
+     drei Einträge denselben Rahmen, und die Auswahl wäre nicht mehr zu sehen. */
+  @media (forced-colors: active) {
+    label {
+      forced-color-adjust: none;
+      color: CanvasText;
+      background-color: Canvas;
+      border-color: Canvas;
+    }
+
+    :global(:root[data-modus='hell']) label[for='modus-hell'],
+    :global(:root[data-modus='dunkel']) label[for='modus-dunkel'],
+    :global(:root:not([data-modus='hell'], [data-modus='dunkel'])) label[for='modus-automatisch'] {
+      color: HighlightText;
+      background-color: Highlight;
+      border-color: Highlight;
+    }
   }
 </style>
