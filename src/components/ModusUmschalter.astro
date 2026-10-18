@@ -127,8 +127,9 @@ const optionen = [
     font-weight: 500;
   }
 
+  /* Das Radio ist unsichtbar, also trägt das Label den Fokusring. */
   input:focus-visible + label {
-    outline: 2px solid var(--fokus-ring);
-    outline-offset: 2px;
+    outline: var(--fokus-breite) solid var(--fokus-ring);
+    outline-offset: var(--fokus-versatz);
   }
 </style>
