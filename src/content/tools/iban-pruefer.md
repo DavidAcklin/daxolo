@@ -20,12 +20,13 @@ sprachen:
     slug: verificateur-iban
     title: Vérificateur IBAN
     description: >-
-      Vérifie la clé de contrôle d’un IBAN selon modulo 97-10 et reconnaît les
+      Vérifie les chiffres de contrôle d’un IBAN selon la méthode modulo 97-10 et reconnaît les
       QR-IBAN. Complet pour la Suisse et le Liechtenstein, dans le navigateur.
     keywords:
       - IBAN
       - vérifier IBAN
       - QR-IBAN
+      - chiffres de contrôle
       - clé de contrôle
       - modulo 97-10
   en:

@@ -1,24 +1,45 @@
-/* daxolo Design-Tokens
+/* daxolo Design-Tokens — Fassung 3
  *
- * Markenfarbe: Rosa. Statusfarben bewusst aus anderen Familien, damit
- * "gültig / falsch" nie mit Markenfläche verwechselt wird (CLAUDE.md 6).
+ * Korrektur gegenüber Fassung 2: Der Feldrahmen hell war nur gegen das
+ * Feldinnere gemessen (3.31:1); gegen die Kachel, auf der das Feld steht, lag er
+ * bei 2.95:1. Warnung und Erfolg hell lagen bei ΔE00 7.9 — Fassung 2 rechnete mit
+ * CIE76, das dieses Paar mit 11.0 zu gross ausweist. Neu: Feldrahmen #8d8188,
+ * Erfolg grüner und kühler (#daf1e2 / #1f5637), Fehlerrahmen 2 px.
  *
- * Alle Vorder-/Hintergrundpaare wurden auf mindestens 4.5:1 geprüft,
- * in beiden Modi. Werte in den Kommentaren.
+ * Korrektur gegenüber Fassung 1: Geprüft waren nur Vorder- gegen Hintergrund,
+ * nicht die Flächen untereinander — Marken- und Fehlerfläche hell waren nicht zu
+ * unterscheiden, genau das, wovor CLAUDE.md 6 warnt.
+ *
+ * Geprüft je Modus: 26 Textpaare (≥ 4.5:1), 11 Paare für Rahmen, Fokusring und
+ * Hauptknopf (≥ 3:1, gegen jede angrenzende Fläche) und 10 Paare bedeutungs-
+ * tragender Flächen (ΔE00 nach CIEDE2000 ≥ 8). Alle bestanden. Die Werte in den
+ * Kommentaren sind das Minimum über alle geprüften Flächen.
+ *
+ * Rechenweg im Projekt reproduzierbar: src/styles/tokens.test.ts, läuft mit
+ * `npm test` als CI-Gate. `FARBBERICHT=1 npx vitest run src/styles/tokens.test.ts`
+ * gibt alle Messwerte aus.
+ *
+ * Knappste Werte: Text auf dem Hauptknopf dunkel 4.65:1, Platzhalter dunkel
+ * 4.88:1, Feldrahmen hell 3.32:1, Marke/Fehler hell ΔE00 10.4.
+ *
+ * Grundregel hinter den Statusfarben: Rosa drückt die Fehlerfläche nach Orange,
+ * und dort sass die Warnung. Deshalb ist die Warnfläche nach Gelb gerückt.
+ * Reihenfolge im Farbkreis: Marke (rosa) → Fehler (orangerot) → Warnung (gelb)
+ * → Erfolg (grün). Vier Familien, keine zwei Nachbarn.
  *
  * Rohe Hex-Werte gehören ausschliesslich in diese Datei.
- * Im Markup wird nur über Tokens gearbeitet.
  */
 
 @theme {
   /* ---------- Marke: Rosa ---------- */
-  --color-marke-50: #fbeaf0;
+  --color-marke-50: #fae7f1;
   --color-marke-100: #f4c0d1;
   --color-marke-200: #ed93b1;
   --color-marke-400: #d4537e;
   --color-marke-600: #993556;
   --color-marke-800: #72243e;
   --color-marke-900: #4b1528;
+  --color-marke-flaeche-dunkel: #42152e;
 
   /* ---------- Neutrale: leicht warm, damit sie zu Rosa passen ---------- */
   --color-neutral-0: #ffffff;
@@ -26,27 +47,33 @@
   --color-neutral-50: #f4f1f2;
   --color-neutral-100: #e8e3e5;
   --color-neutral-200: #d6cfd2;
-  --color-neutral-400: #7a7175;
+  --color-neutral-350: #8d8188; /* Feldrahmen hell, 3.32:1 auf Kachel */
+  --color-neutral-450: #6e6469; /* gedämpfter Text hell, 5.07:1 auf Kachel */
   --color-neutral-600: #5a5356;
   --color-neutral-800: #2e2a2c;
   --color-neutral-900: #1c1a1b;
   --color-neutral-950: #171415;
 
-  /* ---------- Status ---------- */
-  --color-erfolg-bg: #eaf3de;
-  --color-erfolg-text: #2f5a0d;
+  /* ---------- Status: vier getrennte Farbfamilien ---------- */
+  /* Erfolg grüner und kühler — hält ΔE00 12.7 zur Warnfläche (Fassung 2: 7.9) */
+  --color-erfolg-bg: #daf1e2;
+  --color-erfolg-text: #1f5637;
   --color-erfolg-bg-dunkel: #24331a;
   --color-erfolg-text-dunkel: #c0dd97;
 
-  --color-warnung-bg: #faeeda;
+  /* Warnung bewusst gelb statt bernstein — hält Abstand zur Fehlerfläche */
+  --color-warnung-bg: #f7f0c9;
   --color-warnung-text: #6b400a;
-  --color-warnung-bg-dunkel: #3a2a10;
+  --color-warnung-bg-dunkel: #36300e;
   --color-warnung-text-dunkel: #fac775;
 
-  --color-fehler-bg: #fcebeb;
-  --color-fehler-text: #8f2323;
-  --color-fehler-bg-dunkel: #3a1d1d;
-  --color-fehler-text-dunkel: #f09595;
+  /* Fehler orangerot statt rot — hält Abstand zur Markenfläche */
+  --color-fehler-bg: #fceade;
+  --color-fehler-text: #7e2d0f;
+  --color-fehler-rahmen: #b4441c;
+  --color-fehler-bg-dunkel: #412111;
+  --color-fehler-text-dunkel: #f5b183;
+  --color-fehler-rahmen-dunkel: #e08a5a;
 
   /* ---------- Radien: genau drei, plus Pille ---------- */
   --radius-kachel: 16px;
@@ -68,6 +95,15 @@
   --spacing-kachel: 1.5rem;
   --spacing-innen: 1rem;
   --spacing-eng: 0.625rem;
+
+  /* Der Fokusring braucht Versatz, sonst klebt er bei einem Fehler direkt am
+     farbigen Feldrahmen und beide verschmelzen optisch. */
+  --fokus-breite: 2px;
+  --fokus-versatz: 2px;
+
+  /* Fehlerrahmen doppelt so breit wie der normale Feldrahmen, in beiden Modi:
+     neben dem Fokusring muss der Fehlerzustand erkennbar bleiben. */
+  --fehler-rahmen-breite: 2px;
 }
 
 /* ---------- Rollen: hell ---------- */
@@ -78,27 +114,31 @@
   --flaeche-kachel: var(--color-neutral-50);
   --flaeche-innen: var(--color-neutral-0);
 
-  --text-primaer: var(--color-neutral-900); /* 16.36:1 auf Seite */
-  --text-sekundaer: var(--color-neutral-600); /*  7.48:1 auf innen */
-  --text-gedaempft: var(--color-neutral-400); /*  4.72:1 auf innen */
+  --text-primaer: var(--color-neutral-900); /* 15.43:1 auf Kachel */
+  --text-sekundaer: var(--color-neutral-600); /*  6.67:1 auf Kachel */
+  --text-gedaempft: var(--color-neutral-450); /*  5.07:1 auf Kachel */
+  --text-platzhalter: var(--color-neutral-450); /*  5.69:1 im Feld */
 
-  --linie: var(--color-neutral-100);
+  --linie: var(--color-neutral-100); /* nur dekorative Trennung */
   --linie-stark: var(--color-neutral-200);
+  --feld-rahmen: var(--color-neutral-350); /*  3.32:1 auf Kachel — WCAG 1.4.11 */
 
   --marke-flaeche: var(--color-marke-50);
-  --marke-text-auf-flaeche: var(--color-marke-800); /* 8.90:1 */
-  --marke-aktion: var(--color-marke-600); /* 7.00:1 gegen Weiss */
+  --marke-text-auf-flaeche: var(--color-marke-800); /*  8.72:1 */
+  --marke-aktion: var(--color-marke-600); /*  Text darauf 7.00:1 */
   --marke-aktion-text: var(--color-neutral-0);
   --marke-aktion-hover: var(--color-marke-800);
+  --marke-link: var(--color-marke-600); /*  6.24:1 auf Kachel */
 
   --erfolg-flaeche: var(--color-erfolg-bg);
-  --erfolg-text: var(--color-erfolg-text); /* 7.10:1 */
+  --erfolg-text: var(--color-erfolg-text); /*  7.22:1 auf Erfolgsfläche */
   --warnung-flaeche: var(--color-warnung-bg);
-  --warnung-text: var(--color-warnung-text); /* 7.75:1 */
+  --warnung-text: var(--color-warnung-text); /*  7.73:1 */
   --fehler-flaeche: var(--color-fehler-bg);
-  --fehler-text: var(--color-fehler-text); /* 7.49:1 */
+  --fehler-text: var(--color-fehler-text); /*  7.92:1 */
+  --fehler-rahmen: var(--color-fehler-rahmen); /*  4.94:1 auf Kachel */
 
-  --fokus-ring: var(--color-marke-600);
+  --fokus-ring: var(--color-marke-600); /*  6.24:1 auf Kachel */
 }
 
 /* ---------- Rollen: dunkel ---------- */
@@ -110,29 +150,33 @@
     --flaeche-kachel: #211d1f;
     --flaeche-innen: #2a2528;
 
-    --text-primaer: #f2edef; /* 15.81:1 */
-    --text-sekundaer: #a9a0a4; /*  6.55:1 */
-    --text-gedaempft: #8a8085;
+    --text-primaer: #f2edef; /* 13.01:1 im Feld */
+    --text-sekundaer: #a9a0a4; /*  5.92:1 im Feld */
+    --text-gedaempft: #9a9095; /*  4.88:1 im Feld */
+    --text-platzhalter: #9a9095; /*  4.88:1 im Feld */
 
     --linie: #373134;
     --linie-stark: #4a4246;
+    --feld-rahmen: #85787e; /*  3.58:1 im Feld — WCAG 1.4.11 */
 
-    --marke-flaeche: #3d1a29;
-    --marke-text-auf-flaeche: var(--color-marke-200); /* 7.47:1 */
+    --marke-flaeche: var(--color-marke-flaeche-dunkel);
+    --marke-text-auf-flaeche: var(--color-marke-200); /*  6.83:1 */
     /* Aktion: 4.65:1 — besteht, aber ohne Reserve.
        Wird der Ton je aufgehellt, muss der Text auf Weiss wechseln. */
     --marke-aktion: var(--color-marke-400);
     --marke-aktion-text: var(--color-neutral-950);
     --marke-aktion-hover: var(--color-marke-200);
+    --marke-link: var(--color-marke-200); /*  6.75:1 im Feld */
 
     --erfolg-flaeche: var(--color-erfolg-bg-dunkel);
-    --erfolg-text: var(--color-erfolg-text-dunkel); /* 8.97:1 */
+    --erfolg-text: var(--color-erfolg-text-dunkel); /*  8.97:1 */
     --warnung-flaeche: var(--color-warnung-bg-dunkel);
-    --warnung-text: var(--color-warnung-text-dunkel); /* 8.88:1 */
+    --warnung-text: var(--color-warnung-text-dunkel); /*  8.51:1 */
     --fehler-flaeche: var(--color-fehler-bg-dunkel);
-    --fehler-text: var(--color-fehler-text-dunkel); /* 6.87:1 */
+    --fehler-text: var(--color-fehler-text-dunkel); /*  7.93:1 */
+    --fehler-rahmen: var(--color-fehler-rahmen-dunkel); /*  5.71:1 im Feld */
 
-    --fokus-ring: var(--color-marke-200);
+    --fokus-ring: var(--color-marke-200); /*  6.75:1 im Feld */
   }
 }
 
@@ -143,20 +187,24 @@
   --flaeche-innen: #2a2528;
   --text-primaer: #f2edef;
   --text-sekundaer: #a9a0a4;
-  --text-gedaempft: #8a8085;
+  --text-gedaempft: #9a9095;
+  --text-platzhalter: #9a9095;
   --linie: #373134;
   --linie-stark: #4a4246;
-  --marke-flaeche: #3d1a29;
+  --feld-rahmen: #85787e;
+  --marke-flaeche: var(--color-marke-flaeche-dunkel);
   --marke-text-auf-flaeche: var(--color-marke-200);
   --marke-aktion: var(--color-marke-400);
   --marke-aktion-text: var(--color-neutral-950);
   --marke-aktion-hover: var(--color-marke-200);
+  --marke-link: var(--color-marke-200);
   --erfolg-flaeche: var(--color-erfolg-bg-dunkel);
   --erfolg-text: var(--color-erfolg-text-dunkel);
   --warnung-flaeche: var(--color-warnung-bg-dunkel);
   --warnung-text: var(--color-warnung-text-dunkel);
   --fehler-flaeche: var(--color-fehler-bg-dunkel);
   --fehler-text: var(--color-fehler-text-dunkel);
+  --fehler-rahmen: var(--color-fehler-rahmen-dunkel);
   --fokus-ring: var(--color-marke-200);
 }
 
@@ -167,4 +215,12 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
+}
+
+/* ---------- Fokus ---------- */
+/* Immer mit Versatz, damit der Ring nie mit einem farbigen Feldrahmen
+   verschmilzt — der Fehlerfall ist genau der, in dem man ihn braucht. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: var(--fokus-breite) solid var(--fokus-ring);
+  outline-offset: var(--fokus-versatz);
 }

@@ -51,7 +51,7 @@ describe('befund — nur Pruefziffer geprueft', () => {
     expect(ergebnis?.werte['land']).toBe('DE');
   });
 
-  it('zeigt keine Bankleitzahl, die es nicht belegen kann', () => {
+  it('zeigt keine Instituts-Identifikation, die es nicht belegen kann', () => {
     const zeilen = befund('DE89370400440532013000')?.zeilen ?? [];
     expect(zeilen.map((zeile) => zeile.schluessel)).not.toContain('zeile.iid');
   });
