@@ -296,9 +296,10 @@ bewusst hergestellt und geprüft — bei einem Prüfwerkzeug ist "gültig oder f
 Kernaussage und darf nie mit Markenfläche verwechselt werden.
 
 Farbprüfung umfasst zwei Messungen: Vorder- zu Hintergrund nach WCAG (4.5:1 für Text,
-3:1 für Rahmen, Fokusringe und bedeutungstragende Grafik) und den Abstand der Flächen
-untereinander (Ziel dE >= 8). Die zweite Messung prüft kein Werkzeug automatisch — sie
-wird bei jeder Farbänderung von Hand gerechnet und das Ergebnis dokumentiert.
+3:1 für Rahmen, Fokusringe und bedeutungstragende Grafik, gemessen gegen jede
+angrenzende Fläche) und den Abstand bedeutungstragender Flächen untereinander nach
+CIEDE2000 (Ziel dE ≥ 8). Beide Messungen laufen als automatischer Test über tokens.css
+und sind ein CI-Gate.
 
 Alle Farbwerte liegen als Tokens in `src/styles/tokens.css`. Rohe Hex-Werte im Markup
 sind ein Fehler.
