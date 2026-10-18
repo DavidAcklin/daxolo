@@ -72,3 +72,19 @@ test('der Sprunglink ist das erste per Tastatur erreichbare Element', async ({ p
   await expect(fokus).toHaveText('Direkt zum Inhalt');
   await expect(fokus).toBeVisible();
 });
+
+test('der Farbmodus-Umschalter ist mit JavaScript sichtbar', async ({ page }) => {
+  await page.goto('/de/');
+  await expect(page.locator('[data-modus-umschalter]')).toBeVisible();
+});
+
+test.describe('ohne JavaScript', () => {
+  test.use({ javaScriptEnabled: false });
+
+  test('fehlt der Farbmodus-Umschalter, statt wirkungslos dazustehen', async ({ page }) => {
+    await page.goto('/de/');
+    await expect(page.locator('[data-modus-umschalter]')).toBeHidden();
+    // Der Sprachumschalter ist ein Link und bleibt.
+    await expect(page.getByRole('link', { name: 'Français' })).toBeVisible();
+  });
+});

@@ -78,6 +78,20 @@ const alternateUrls = locales
       }
     </script>
 
+    {
+      /* Ohne JavaScript kann der Umschalter nichts umschalten — dann gilt
+        prefers-color-scheme, und ein Bedienelement ohne Wirkung bleibt weg.
+        `!important`, weil der gescopte Komponentenstil spezifischer ist und
+        diese Regel jede Darstellung des Umschalters übersteuern soll. */
+    }
+    <noscript>
+      <style is:inline>
+        [data-modus-umschalter] {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+
     <meta name="generator" content={Astro.generator} />
     <slot name="head" />
   </head>

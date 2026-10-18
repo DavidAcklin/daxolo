@@ -6,9 +6,9 @@ import { getLocaleFromUrl, useTranslations } from '../i18n/utils';
  * Umschalter hell / dunkel / automatisch (CLAUDE.md 6).
  *
  * Drei Radios statt drei Knöpfe: die Auswahl ist eine Auswahl, und die
- * Pfeiltasten funktionieren ohne eigenen Code. Ohne JavaScript bleibt es bei
- * "automatisch" — dann entscheidet `prefers-color-scheme`, und die Seite ist
- * vollständig benutzbar.
+ * Pfeiltasten funktionieren ohne eigenen Code. Ohne JavaScript blendet
+ * BaseLayout den Umschalter aus — dann entscheidet `prefers-color-scheme`, und
+ * die Seite ist vollständig benutzbar.
  *
  * Gespeichert wird in `localStorage`, nicht in einem Cookie: die Einstellung
  * geht niemanden ausser dem Browser etwas an, und ohne Cookie gibt es auch
