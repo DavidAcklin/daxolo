@@ -185,23 +185,39 @@ test('im Kontrastmodus (forced-colors) bleibt die Auswahl im Farbmodus-Umschalte
   expect(await rahmen('hell')).toBe(await rahmen('dunkel'));
 });
 
-test('"QR-Referenz" bricht nie am Bindestrich um, auch nicht im ersetzten Text', async ({
+test('QR-Begriffe brechen nie am Bindestrich um, auch nicht im ersetzten Text', async ({
   page,
 }) => {
   await page.goto('/de/werkzeuge/iban-pruefer/');
-  const pruefe = async () => {
-    const begriff = page.locator('.status .umbruchfrei');
-    await expect(begriff).toHaveText('QR-Referenz');
-    await expect(begriff).toHaveCSS('white-space', 'nowrap');
+  const umbruchfrei = (bereich: string, begriff: string) =>
+    page.locator(`${bereich} .umbruchfrei`, { hasText: begriff }).first();
+  const pruefe = async (bereich: string, begriff: string) => {
+    await expect(umbruchfrei(bereich, begriff)).toHaveText(begriff);
+    await expect(umbruchfrei(bereich, begriff)).toHaveCSS('white-space', 'nowrap');
   };
 
-  await pruefe(); // aus dem Build: konventionelle IBAN
-  await page.locator('#iban-eingabe').fill('CH44 3199 9123 0008 8901 2');
-  await expect(page.locator('.status')).toContainText('QR-IBAN');
-  await pruefe(); // aus dem Skript: QR-IBAN
+  // Aus dem Build: konventionelle IBAN.
+  await pruefe('.status', 'QR-Referenz');
+  await pruefe('.status', 'QR-IBAN');
 
-  await expect(page.locator('.erklaerung .umbruchfrei').first()).toHaveCSS('white-space', 'nowrap');
+  // Aus dem Skript: QR-IBAN, auch in der ersetzten Tabellenzeile "Art".
+  await page.locator('#iban-eingabe').fill('CH44 3199 9123 0008 8901 2');
+  await expect(page.locator('.status')).toContainText('QR-Referenz');
+  await pruefe('.status', 'QR-Referenz');
+  await pruefe('.status', 'QR-IBAN');
+  await pruefe('#iban-werte', 'QR-IBAN');
 });
+
+for (const { pfad } of seiten) {
+  test(`${pfad}: QR-Begriffe im Erklaertext sind umbruchfrei`, async ({ page }) => {
+    await page.goto(pfad);
+    for (const begriff of ['QR-IBAN', 'QR-IID']) {
+      const span = page.locator('.erklaerung .umbruchfrei', { hasText: begriff }).first();
+      await expect(span).toHaveText(begriff);
+      await expect(span).toHaveCSS('white-space', 'nowrap');
+    }
+  });
+}
 
 test('die Tabellenzeile "Art" nennt die konventionelle IBAN', async ({ page }) => {
   await page.goto('/de/werkzeuge/iban-pruefer/');

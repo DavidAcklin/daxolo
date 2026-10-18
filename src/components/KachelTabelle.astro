@@ -1,5 +1,6 @@
 ---
 import Kachel from './Kachel.astro';
+import { segmente } from '../i18n/umbruch';
 import { istZahl, zellText, type Zelle } from './tabellenzeilen';
 
 /**
@@ -78,7 +79,9 @@ const zelle = (inhalt: Zelle, i: number) => {
                 const { Tag, klassen, text } = zelle(zeile[i] ?? '', i);
                 return (
                   <Tag scope={Tag === 'th' ? 'row' : undefined} class:list={klassen}>
-                    {text}
+                    {segmente(text).map((s) =>
+                      s.umbruchfrei ? <span class="umbruchfrei">{s.text}</span> : s.text,
+                    )}
                   </Tag>
                 );
               })}

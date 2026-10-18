@@ -1,5 +1,6 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { locales, type Locale } from '../i18n/ui';
+import { umbruchfreiHtml } from '../i18n/umbruch';
 import { toolPath } from '../i18n/utils';
 
 /**
@@ -72,6 +73,18 @@ export async function erklaerungFuer(
   locale: Locale,
 ): Promise<Erklaerung | undefined> {
   return getEntry('erklaerungen', `${werkzeugId}.${locale}`);
+}
+
+/**
+ * Gerendertes HTML des Erklaertexts, mit umbruchfreien Begriffen wie
+ * "QR-Referenz" (src/i18n/umbruch.ts), oder `undefined`, wenn der Text fehlt.
+ */
+export async function erklaerungHtml(
+  werkzeugId: string,
+  locale: Locale,
+): Promise<string | undefined> {
+  const html = (await erklaerungFuer(werkzeugId, locale))?.rendered?.html;
+  return html === undefined ? undefined : umbruchfreiHtml(html);
 }
 
 /**

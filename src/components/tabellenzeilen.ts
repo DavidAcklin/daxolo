@@ -7,6 +7,8 @@
  * einer Zeile gibt es damit genau einmal, in KachelTabelle.astro.
  */
 
+import { fuelleUmbruchfrei } from './textUmbruchfrei';
+
 /** Text einer Zelle, optional mit eigener Angabe, ob er eine Zahl ist. */
 export type Zelle = string | { text: string; zahl?: boolean };
 
@@ -32,7 +34,7 @@ export function ersetzeZeilen(tabelle: HTMLTableElement, zeilen: Zelle[][]): voi
       const tr = vorlage.cloneNode(true) as HTMLTableRowElement;
       for (const [i, zelle] of [...tr.cells].entries()) {
         const inhalt = zeile[i] ?? '';
-        zelle.textContent = zellText(inhalt);
+        fuelleUmbruchfrei(zelle, zellText(inhalt));
         // Im frischen Klon steht die Vorgabe der Spalte.
         zelle.classList.toggle('zahl', istZahl(inhalt, zelle.classList.contains('zahl')));
       }

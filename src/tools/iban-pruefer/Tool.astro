@@ -117,7 +117,7 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
 
 <script>
   import { ersetzeZeilen } from '../../components/tabellenzeilen';
-  import { segmente } from '../../i18n/umbruch';
+  import { fuelleUmbruchfrei } from '../../components/textUmbruchfrei';
   import { befund, type Befund } from './logic';
   import { formatiere } from './texte';
 
@@ -150,20 +150,6 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
     // Text. Deshalb nur schreiben, was wirklich neu ist.
     const setze = (element: HTMLElement | null, neu: string) => {
       if (element !== null && element.textContent !== neu) element.textContent = neu;
-    };
-
-    // Text mit umbruchfreien Begriffen (src/i18n/umbruch.ts); dieselben Segmente
-    // wie beim Rendern im Build.
-    const fuelle = (element: HTMLElement, inhalt: string) => {
-      element.replaceChildren(
-        ...segmente(inhalt).map((s) => {
-          if (!s.umbruchfrei) return document.createTextNode(s.text);
-          const span = document.createElement('span');
-          span.className = 'umbruchfrei';
-          span.textContent = s.text;
-          return span;
-        }),
-      );
     };
 
     const zeigeAmFeld = (ergebnis: Befund | undefined) => {
@@ -202,7 +188,7 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
         erlaeuterungen.forEach((satz, i) => {
           const absatz = vorhanden[i] ?? inhalt.appendChild(document.createElement('p'));
           absatz.dataset['text'] = '';
-          fuelle(absatz, satz);
+          fuelleUmbruchfrei(absatz, satz);
         });
         vorhanden.slice(erlaeuterungen.length).forEach((absatz) => absatz.remove());
       }

@@ -8,9 +8,11 @@
  * `umbruchfrei` (global.css) — global, weil auch das Skript eines Werkzeugs solche
  * Stellen erzeugt.
  *
- * Reine Funktion, kein DOM: Astro und das Skript bauen aus denselben Segmenten.
+ * Reine Funktionen, kein DOM. Angewendet beim Rendern der Werkzeuge (Statusblock,
+ * KachelTabelle), in deren Skripten und über `umbruchfreiHtml` in den
+ * Erklärtexten — überall dieselbe Liste.
  */
-export const UMBRUCHFREI = ['QR-Referenz'] as const;
+export const UMBRUCHFREI = ['QR-Referenz', 'QR-IBAN', 'QR-IID', 'QR-Rechnung'] as const;
 
 export interface Segment {
   text: string;
@@ -30,4 +32,36 @@ export function segmente(text: string): Segment[] {
       text: teil,
       umbruchfrei: (UMBRUCHFREI as readonly string[]).includes(teil),
     }));
+}
+
+const AUSLASSEN_AUF = /^<(code|pre|script|style)\b/i;
+const AUSLASSEN_ZU = /^<\/(code|pre|script|style)>/i;
+const SPAN_AUF = /^<span class="umbruchfrei">$/;
+
+/**
+ * Wendet die Liste auf fertiges HTML an: nur auf Text zwischen den Tags, nie in
+ * Tags oder Attributen, nicht in Code und nicht in Spans, die schon umbruchfrei
+ * sind. Für die gerenderten Erklärtexte — deren HTML stammt aus unserem eigenen
+ * Markdown, nicht aus Eingaben. Ein Markdown-Plugin bräuchte unter Astro 7 ein
+ * zusätzliches Paket; diese Funktion braucht keins.
+ */
+export function umbruchfreiHtml(html: string): string {
+  let auslassen = 0;
+  let inSpan = false;
+  return html
+    .split(/(<[^>]*>)/)
+    .map((teil) => {
+      if (teil.startsWith('<')) {
+        if (AUSLASSEN_AUF.test(teil)) auslassen++;
+        else if (AUSLASSEN_ZU.test(teil)) auslassen = Math.max(0, auslassen - 1);
+        else if (SPAN_AUF.test(teil)) inSpan = true;
+        else if (inSpan && teil === '</span>') inSpan = false;
+        return teil;
+      }
+      if (auslassen > 0 || inSpan) return teil;
+      return segmente(teil)
+        .map((s) => (s.umbruchfrei ? `<span class="umbruchfrei">${s.text}</span>` : s.text))
+        .join('');
+    })
+    .join('');
 }

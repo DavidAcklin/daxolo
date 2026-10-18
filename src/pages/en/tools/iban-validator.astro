@@ -1,9 +1,9 @@
 ---
-import { getEntry, render } from 'astro:content';
+import { getEntry } from 'astro:content';
 import ToolLayout from '../../../layouts/ToolLayout.astro';
 import Tool from '../../../tools/iban-pruefer/Tool.astro';
 import { useTranslations } from '../../../i18n/utils';
-import { alternatePfade, erklaerungFuer } from '../../../lib/werkzeuge';
+import { alternatePfade, erklaerungHtml } from '../../../lib/werkzeuge';
 import { QUELLE, WERKZEUG_ID } from '../../../tools/iban-pruefer/meta';
 
 /** `/en/tools/iban-validator/` */
@@ -14,8 +14,7 @@ const fassung = werkzeug.data.sprachen.en;
 if (fassung === undefined) throw new Error(`Werkzeug ${WERKZEUG_ID} hat keine englische Fassung.`);
 
 const t = useTranslations('en');
-const erklaerung = await erklaerungFuer(WERKZEUG_ID, 'en');
-const Erklaerung = erklaerung === undefined ? undefined : (await render(erklaerung)).Content;
+const erklaerung = await erklaerungHtml(WERKZEUG_ID, 'en');
 ---
 
 <ToolLayout
@@ -27,5 +26,5 @@ const Erklaerung = erklaerung === undefined ? undefined : (await render(erklaeru
   haftungsausschluss={werkzeug.data.haftungsausschluss ? t('tool.disclaimer.text') : undefined}
 >
   <Tool locale="en" />
-  {Erklaerung && <Erklaerung slot="erklaerung" />}
+  {erklaerung && <Fragment slot="erklaerung" set:html={erklaerung} />}
 </ToolLayout>
