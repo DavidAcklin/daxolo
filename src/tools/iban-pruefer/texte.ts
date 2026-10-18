@@ -25,7 +25,9 @@ const de = {
   'status.fehler': 'Fehler',
   'treffer.vollstaendig': 'Prüfziffer stimmt, Aufbau geprüft.',
   'treffer.qr': 'Das ist eine QR-IBAN: sie verlangt zwingend eine QR-Referenz.',
-  'treffer.normal': 'Das ist eine gewöhnliche IBAN: eine QR-Referenz ist hier nicht zulässig.',
+  'treffer.normal':
+    'Das ist eine konventionelle IBAN (die übliche Form, keine QR-IBAN): eine QR-Referenz ist ' +
+    'hier nicht zulässig.',
   'treffer.nur-pruefziffer': 'Prüfziffer stimmt.',
   'treffer.ungeprueft':
     'Länge und Aufbau einer {land}-IBAN prüfen wir nicht — dafür fehlt uns ein geprüftes ' +
@@ -34,7 +36,7 @@ const de = {
     'Die Prüfziffer sagt nichts darüber, ob das Konto existiert. Das weiss nur die Bank.',
   'zeile.iban': 'IBAN',
   'zeile.land': 'Land',
-  'zeile.iid': 'Bankleitzahl (IID)',
+  'zeile.iid': 'Instituts-Identifikation (IID, Nummer der Bank)',
   'zeile.konto': 'Kontonummer',
   'zeile.art': 'Art',
   'zeile.qr-iban': 'QR-IBAN',

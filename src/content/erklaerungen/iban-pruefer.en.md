@@ -39,5 +39,5 @@ there, because we have no verified registry for them. The result says so explici
 of claiming a certainty that does not exist.
 
 As of: 18 October 2026 · Sources: SIX Group, Swiss Implementation Guidelines for the
-QR-bill, version 2.3, chapters 2.8 and 2.10; SIX Group, Technical information about the
+QR-bill, version 2.3, chapters 2.7 to 2.10; SIX Group, Technical information about the
 QR-IID and QR-IBAN, version 1.1; SIX Group, IBAN Checker for Switzerland.

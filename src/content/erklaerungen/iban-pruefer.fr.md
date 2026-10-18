@@ -41,5 +41,5 @@ structure, faute de registre vérifié. Le résultat le dit expressément, au li
 une certitude qui n’existe pas.
 
 État : 18.10.2026 · Sources : SIX Group, Implementation Guidelines suisses pour QR-facture,
-version 2.3, chapitres 2.8 et 2.10 ; SIX Group, Informations techniques sur QR-IID et
+version 2.3, chapitres 2.7 à 2.10 ; SIX Group, Informations techniques sur QR-IID et
 QR-IBAN, version 1.1 ; SIX Group, Vérificateur d’IBAN pour la Suisse.

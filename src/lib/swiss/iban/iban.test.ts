@@ -279,7 +279,7 @@ describe('pruefeIban — Fehlerfaelle', () => {
     }
   });
 
-  it('meldet Buchstaben in der Bankleitzahl', () => {
+  it('meldet Buchstaben in der Instituts-Identifikation', () => {
     const ergebnis = pruefeIban('CH930A762011623852957');
     expect(ergebnis.ok).toBe(false);
     if (!ergebnis.ok) {

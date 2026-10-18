@@ -263,7 +263,7 @@ export function pruefeIban(eingabe: string): IbanErgebnis {
   if (!NUR_ZIFFERN.test(iid)) {
     return fehler(
       'ungueltiges-zeichen',
-      `An den Stellen ${IID_VON} bis ${IID_BIS} steht die Bankleitzahl (IID) aus fünf ` +
+      `An den Stellen ${IID_VON} bis ${IID_BIS} steht die Instituts-Identifikation (IID) aus fünf ` +
         `Ziffern, bei dir "${iid}".`,
       IID_VON,
     );
