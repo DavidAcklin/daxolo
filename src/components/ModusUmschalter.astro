@@ -12,8 +12,14 @@ import { getLocaleFromUrl, useTranslations } from '../i18n/utils';
  *
  * Gespeichert wird in `localStorage`, nicht in einem Cookie: die Einstellung
  * geht niemanden ausser dem Browser etwas an, und ohne Cookie gibt es auch
- * keinen Banner (CLAUDE.md 10). Das Flackern beim Laden verhindert das
- * Inline-Skript im `<head>` von BaseLayout, nicht dieses Modul.
+ * keinen Banner (CLAUDE.md 10).
+ *
+ * Kein Flackern beim Laden, an zwei Stellen: Das Inline-Skript im `<head>` von
+ * BaseLayout setzt `data-modus` auf `<html>`, bevor gezeichnet wird. Und die
+ * sichtbare Auswahl hier folgt diesem Attribut, nicht dem Radio — das Radio
+ * gleicht erst das Modulskript an, und das läuft nach dem ersten Zeichnen.
+ * Hinge die Markierung am Radio, spränge sie beim Laden von "automatisch" auf
+ * den gespeicherten Modus.
  */
 const locale: Locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -37,7 +43,9 @@ const optionen = [
           value={option.wert}
           checked={option.wert === 'automatisch'}
         />
-        <label for={`modus-${option.wert}`}>{option.label}</label>
+        <label for={`modus-${option.wert}`} data-text={option.label}>
+          {option.label}
+        </label>
       </span>
     ))
   }
@@ -90,6 +98,8 @@ const optionen = [
   }
 
   label {
+    display: inline-grid;
+    justify-items: center;
     border-radius: var(--radius-pille);
     padding: 0.25rem 0.7rem;
     font-size: var(--text-klein);
@@ -97,7 +107,21 @@ const optionen = [
     cursor: pointer;
   }
 
-  input:checked + label {
+  /* Breite der fetten Fassung reservieren: sonst verschiebt der Wechsel des
+     Schnitts die Nachbarn. `visibility: hidden` hält den doppelten Text auch aus
+     dem Namen heraus, den Screenreader vorlesen. */
+  label::after {
+    content: attr(data-text);
+    font-weight: 500;
+    block-size: 0;
+    visibility: hidden;
+    overflow: hidden;
+  }
+
+  /* Markiert ist, was auf <html> steht. Ohne data-modus gilt "automatisch". */
+  :global(:root[data-modus='hell']) label[for='modus-hell'],
+  :global(:root[data-modus='dunkel']) label[for='modus-dunkel'],
+  :global(:root:not([data-modus='hell'], [data-modus='dunkel'])) label[for='modus-automatisch'] {
     background-color: var(--marke-flaeche);
     color: var(--marke-text-auf-flaeche);
     font-weight: 500;

@@ -27,6 +27,18 @@ export interface Zeile {
 
 export interface Befund {
   status: 'erfolg' | 'warnung' | 'fehler';
+  /**
+   * Wohin die Aussage gehört.
+   *
+   * `feld`: Die Eingabe ist der Form nach (noch) keine IBAN — falsches Zeichen,
+   * falsche Länge. Das ist ein Hinweis zur Eingabe und steht inline am Feld; ein
+   * Urteil gibt es noch nicht (CLAUDE.md 9).
+   *
+   * `ergebnis`: Die Eingabe ist vollständig und wurde gerechnet. Das Urteil steht
+   * im Statusblock — gültig wie ungültig an derselben Stelle, weil bei einem
+   * Prüfwerkzeug genau diese Aussage zählt (CLAUDE.md 6).
+   */
+  ort: 'feld' | 'ergebnis';
   /** Kernaussage in einem Satz. */
   titel: TextKey;
   /** Erläuterungen darunter, in dieser Reihenfolge. */
@@ -52,6 +64,7 @@ export function befund(eingabe: string): Befund | undefined {
   if (ergebnis.ok && ergebnis.umfang === 'vollstaendig') {
     return {
       status: 'erfolg',
+      ort: 'ergebnis',
       titel: 'treffer.vollstaendig',
       texte: [ergebnis.istQrIban ? 'treffer.qr' : 'treffer.normal', 'treffer.kein-konto'],
       werte: {},
@@ -75,6 +88,7 @@ export function befund(eingabe: string): Befund | undefined {
     // und wird nicht zu "gültig" verkürzt (CLAUDE.md 2.5).
     return {
       status: 'warnung',
+      ort: 'ergebnis',
       titel: 'treffer.nur-pruefziffer',
       texte: ['treffer.ungeprueft', 'treffer.kein-konto'],
       werte: { land: ergebnis.land },
@@ -94,7 +108,8 @@ function fehlerBefund(eingabe: string, code: IbanFehlerCode, stelle: number | un
   const land = iban.slice(0, 2);
   const soll = IBAN_LAENGE[land];
 
-  const rumpf = { status: 'fehler', texte: [], werte: {}, zeilen: [] } satisfies Omit<
+  // Formfehler gehören ans Feld; nur die falsche Prüfziffer ist ein Urteil.
+  const rumpf = { status: 'fehler', ort: 'feld', texte: [], werte: {}, zeilen: [] } satisfies Omit<
     Befund,
     'titel'
   >;
@@ -119,6 +134,7 @@ function fehlerBefund(eingabe: string, code: IbanFehlerCode, stelle: number | un
       const passend = berechnePruefziffern(land, iban.slice(4));
       return {
         ...rumpf,
+        ort: 'ergebnis',
         titel: 'fehler.pruefziffer-falsch',
         texte: passend === undefined ? [] : ['fehler.pruefziffer-hinweis'],
         werte: { passend: passend ?? '' },

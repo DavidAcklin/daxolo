@@ -61,8 +61,14 @@
     font-size: var(--text-gross);
   }
 
+  /* Links im Text sind unterstrichen, nicht nur eingefärbt: Farbe allein
+     unterscheidet sie für viele nicht vom Fliesstext. Tailwinds Preflight nimmt
+     die Unterstreichung weg, deshalb steht sie hier ausdrücklich. Navigation
+     schaltet sie lokal ab. */
   a {
     color: var(--marke-aktion);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
   }
 

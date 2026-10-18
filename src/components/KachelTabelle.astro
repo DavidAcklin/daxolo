@@ -5,12 +5,26 @@ import Kachel from './Kachel.astro';
  * Tabelle in einer Kachel (CLAUDE.md 6).
  *
  * Die Tabelle kommt als Ganzes in eine Kachel, Zeilen trennen Haarlinien —
- * niemals eine Kachel je Datenzeile. Spalten mit Zahlen laufen in Monospace und
- * rechtsbündig, damit Werte untereinander vergleichbar bleiben.
+ * niemals eine Kachel je Datenzeile. Zahlenspalten laufen rechtsbündig in
+ * Monospace, damit Werte untereinander vergleichbar bleiben (Leitplanke 5).
+ *
+ * Der Standard-Slot steht über der Tabelle (etwa ein Statusblock), der Slot
+ * `fuss` darunter (etwa ein Kopier-Knopf). Beides bleibt in derselben Kachel —
+ * eine Verschachtelungsstufe, nicht zwei.
+ *
+ * Zeilen, die ein Skript nachträglich einsetzt, sehen aus wie die gerenderten:
+ * die Regeln greifen über `:global` auf die Zellen, weil Astros Scope-Attribut
+ * nur Elemente aus dieser Vorlage tragen. Vertrag für solche Zeilen:
+ * `<th scope="row">` für Zeilenköpfe, Klasse `ende` für rechtsbündige Zellen,
+ * Klasse `zahl` für Monospace.
  */
+
+/** Text einer Zelle, optional mit eigener Angabe, ob er eine Zahl ist. */
+export type Zelle = string | { text: string; zahl?: boolean };
+
 export interface Spalte {
   name: string;
-  /** Zahlenspalte: Monospace, rechtsbündig, gleiche Ziffernbreite. */
+  /** Zahlenspalte: rechtsbündig, Monospace, gleiche Ziffernbreite. */
   zahl?: boolean;
 }
 
@@ -18,73 +32,115 @@ interface Props {
   titel?: string | undefined;
   hinweis?: string | undefined;
   spalten: Spalte[];
-  zeilen: string[][];
-  /** Kopfzeile ausblenden, wenn die Tabelle Feld und Wert paarweise zeigt. */
+  zeilen: Zelle[][];
+  /** Erste Spalte als Zeilenkopf (`<th scope="row">`), etwa bei Feld und Wert. */
+  zeilenkopf?: boolean | undefined;
+  /** Kopfzeile nur für Screenreader, wenn die Zeilenköpfe für sich sprechen. */
   kopfVerbergen?: boolean | undefined;
+  /** Name der Tabelle für Screenreader (`<caption>`). */
+  beschriftung?: string | undefined;
+  /** Id der `<table>`, damit ein Skript Zeilen ersetzen kann. */
+  id?: string | undefined;
 }
 
-const { titel, hinweis, spalten, zeilen, kopfVerbergen } = Astro.props;
+const { titel, hinweis, spalten, zeilen, zeilenkopf, kopfVerbergen, beschriftung, id } =
+  Astro.props;
+
+const text = (zelle: Zelle) => (typeof zelle === 'string' ? zelle : zelle.text);
+const istZahl = (zelle: Zelle, spalte: Spalte | undefined) =>
+  typeof zelle === 'string' ? spalte?.zahl === true : (zelle.zahl ?? spalte?.zahl === true);
 ---
 
 <Kachel titel={titel} hinweis={hinweis}>
-  <table>
-    <thead class={kopfVerbergen ? 'sr-only' : undefined}>
-      <tr>
+  <div class="inhalt">
+    <slot />
+    <table id={id} class="tabelle" hidden={zeilen.length === 0}>
+      {beschriftung !== undefined && <caption class="sr-only">{beschriftung}</caption>}
+      <thead class:list={{ 'sr-only': kopfVerbergen }}>
+        <tr>
+          {
+            spalten.map((spalte) => (
+              <th scope="col" class:list={{ ende: spalte.zahl }}>
+                {spalte.name}
+              </th>
+            ))
+          }
+        </tr>
+      </thead>
+      <tbody>
         {
-          spalten.map((spalte) => (
-            <th scope="col" class={spalte.zahl ? 'zahl-kopf' : undefined}>
-              {spalte.name}
-            </th>
+          zeilen.map((zeile) => (
+            <tr>
+              {zeile.map((zelle, i) => {
+                const spalte = spalten[i];
+                const klassen = { ende: spalte?.zahl, zahl: istZahl(zelle, spalte) };
+                return zeilenkopf && i === 0 ? (
+                  <th scope="row" class:list={klassen}>
+                    {text(zelle)}
+                  </th>
+                ) : (
+                  <td class:list={klassen}>{text(zelle)}</td>
+                );
+              })}
+            </tr>
           ))
         }
-      </tr>
-    </thead>
-    <tbody>
-      {
-        zeilen.map((zeile) => (
-          <tr>
-            {zeile.map((zelle, i) => (
-              <td class={spalten[i]?.zahl ? 'zahl' : undefined}>{zelle}</td>
-            ))}
-          </tr>
-        ))
-      }
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+    <slot name="fuss" />
+  </div>
 </Kachel>
 
 <style>
-  table {
+  .inhalt {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-innen);
+  }
+
+  .tabelle {
     inline-size: 100%;
     border-collapse: collapse;
     font-size: var(--text-basis);
   }
 
-  th {
+  .tabelle :global(th),
+  .tabelle :global(td) {
+    padding-block: var(--spacing-eng);
     text-align: start;
-    font-weight: 500;
-    font-size: var(--text-klein);
-    color: var(--text-sekundaer);
-    padding-block: var(--spacing-eng);
-  }
-
-  th.zahl-kopf {
-    text-align: end;
-  }
-
-  td {
-    padding-block: var(--spacing-eng);
-    /* Haarlinie statt Rahmen. */
-    border-block-start: 1px solid var(--linie);
     vertical-align: baseline;
   }
 
-  tbody tr:first-child td {
-    border-block-start: none;
+  .tabelle :global(th + th),
+  .tabelle :global(th + td),
+  .tabelle :global(td + td) {
+    padding-inline-start: var(--spacing-innen);
   }
 
-  td.zahl {
+  .tabelle :global(thead th) {
+    font-weight: 500;
+    font-size: var(--text-klein);
+    color: var(--text-sekundaer);
+  }
+
+  .tabelle :global(th[scope='row']) {
+    font-weight: 400;
+    font-size: var(--text-klein);
+    color: var(--text-sekundaer);
+  }
+
+  /* Haarlinie statt Rahmen, zwischen den Zeilen. Über der ersten nur, wenn eine
+     sichtbare Kopfzeile darüber steht. */
+  .tabelle :global(tbody tr + tr > *),
+  .tabelle :global(thead:not(.sr-only) + tbody tr:first-child > *) {
+    border-block-start: 1px solid var(--linie);
+  }
+
+  .tabelle :global(.ende) {
     text-align: end;
+  }
+
+  .tabelle :global(.zahl) {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
