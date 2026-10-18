@@ -69,18 +69,18 @@ const fr: Texte = {
   'status.erfolg': 'Succès',
   'status.warnung': 'Remarque',
   'status.fehler': 'Erreur',
-  'treffer.vollstaendig': 'Les chiffres de contrôle sont corrects, la structure est vérifiée.',
+  'treffer.vollstaendig': 'La clé de contrôle est correcte, la structure est vérifiée.',
   'treffer.qr': 'Il s’agit d’un QR-IBAN : il exige une référence QR.',
-  'treffer.normal': 'Il s’agit d’un IBAN conventionnel : une référence QR n’est pas admise ici.',
-  'treffer.nur-pruefziffer': 'Les chiffres de contrôle sont corrects.',
+  'treffer.normal': 'Il s’agit d’un IBAN ordinaire : une référence QR n’est pas admise ici.',
+  'treffer.nur-pruefziffer': 'La clé de contrôle est correcte.',
   'treffer.ungeprueft':
     'Nous ne vérifions ni la longueur ni la structure d’un IBAN {land} — il nous manque un ' +
     'registre vérifié. La vérification complète couvre CH et LI.',
   'treffer.kein-konto':
-    'Les chiffres de contrôle ne disent rien sur l’existence du compte. Seule la banque le sait.',
+    'La clé de contrôle ne dit rien sur l’existence du compte. Seule la banque le sait.',
   'zeile.iban': 'IBAN',
   'zeile.land': 'Pays',
-  'zeile.iid': 'Identification d’établissement (IID)',
+  'zeile.iid': 'Numéro de banque (IID)',
   'zeile.konto': 'Numéro de compte',
   'zeile.art': 'Type',
   'zeile.qr-iban': 'QR-IBAN',
@@ -96,9 +96,9 @@ const fr: Texte = {
   'fehler.zu-kurz': 'C’est trop court pour un IBAN : {ist} positions.',
   'fehler.unbekanntes-land': 'Un IBAN commence par deux lettres désignant le pays.',
   'fehler.pruefziffer-falsch':
-    'Les chiffres de contrôle ne correspondent pas au reste : l’IBAN comporte une faute de frappe.',
+    'La clé de contrôle ne correspond pas au reste : l’IBAN comporte une faute de frappe.',
   'fehler.pruefziffer-hinweis':
-    'Pour le numéro de compte saisi, les chiffres de contrôle seraient {passend}. Si le numéro de ' +
+    'Pour le numéro de compte saisi, la clé de contrôle serait {passend}. Si le numéro de ' +
     'compte est juste, corrige les positions 3 et 4 — sinon la faute est ailleurs.',
 };
 
@@ -115,7 +115,7 @@ const en: Texte = {
   'status.fehler': 'Error',
   'treffer.vollstaendig': 'Check digits are correct, structure verified.',
   'treffer.qr': 'This is a QR-IBAN: it requires a QR reference.',
-  'treffer.normal': 'This is a conventional IBAN: a QR reference is not allowed here.',
+  'treffer.normal': 'This is an ordinary IBAN: a QR reference is not allowed here.',
   'treffer.nur-pruefziffer': 'Check digits are correct.',
   'treffer.ungeprueft':
     'We do not verify length or structure of a {land} IBAN — we have no verified registry ' +
@@ -124,7 +124,7 @@ const en: Texte = {
     'Check digits say nothing about whether the account exists. Only the bank knows that.',
   'zeile.iban': 'IBAN',
   'zeile.land': 'Country',
-  'zeile.iid': 'Institution identification (IID)',
+  'zeile.iid': 'Bank number (IID)',
   'zeile.konto': 'Account number',
   'zeile.art': 'Type',
   'zeile.qr-iban': 'QR-IBAN',

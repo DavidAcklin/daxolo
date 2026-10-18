@@ -1,8 +1,7 @@
 ---
 import Feld from '../../components/Feld.astro';
 import Kachel from '../../components/Kachel.astro';
-import KachelTabelle from '../../components/KachelTabelle.astro';
-import type { Zelle } from '../../components/tabellenzeilen';
+import KachelTabelle, { type Zelle } from '../../components/KachelTabelle.astro';
 import Knopf from '../../components/Knopf.astro';
 import Statusblock from '../../components/Statusblock.astro';
 import type { Locale } from '../../i18n/ui';
@@ -111,7 +110,6 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
 <script type="application/json" data-iban-texte set:html={skripttexte} is:inline />
 
 <script>
-  import { ersetzeZeilen } from '../../components/tabellenzeilen';
   import { befund, type Befund } from './logic';
   import { formatiere } from './texte';
 
@@ -187,16 +185,21 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
         vorhanden.slice(erlaeuterungen.length).forEach((absatz) => absatz.remove());
       }
 
-      // Wie eine Zeile aussieht, weiss KachelTabelle; hier entsteht nur der Inhalt.
-      ersetzeZeilen(
-        tabelle,
-        urteil.zeilen.map((zeile) => [
-          text(zeile.schluessel),
-          {
-            text: zeile.wert.startsWith('zeile.') ? text(zeile.wert) : zeile.wert,
-            zahl: zeile.zahl,
-          },
-        ]),
+      // Zeilen nach dem Vertrag von KachelTabelle: Zeilenkopf als th, Wertspalte
+      // rechtsbündig (`ende`), Zahlen in Monospace (`zahl`).
+      tabelle.hidden = urteil.zeilen.length === 0;
+      tabelle.tBodies[0]?.replaceChildren(
+        ...urteil.zeilen.map((zeile) => {
+          const tr = document.createElement('tr');
+          const kopf = document.createElement('th');
+          kopf.scope = 'row';
+          kopf.textContent = text(zeile.schluessel);
+          const wert = document.createElement('td');
+          wert.className = zeile.zahl ? 'ende zahl' : 'ende';
+          wert.textContent = zeile.wert.startsWith('zeile.') ? text(zeile.wert) : zeile.wert;
+          tr.append(kopf, wert);
+          return tr;
+        }),
       );
 
       if (ansagen) {

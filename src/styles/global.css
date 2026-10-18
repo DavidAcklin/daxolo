@@ -66,24 +66,21 @@
      die Unterstreichung weg, deshalb steht sie hier ausdrücklich. Navigation
      schaltet sie lokal ab. */
   a {
-    color: var(--marke-link);
+    color: var(--marke-aktion);
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
   }
 
-  /* Im dunklen Modus haben Link und Hover denselben Ton. Die dickere Linie
-     zeigt den Hover auch ohne Farbwechsel. */
   a:hover {
     color: var(--marke-aktion-hover);
-    text-decoration-thickness: 2px;
   }
 
-  /* Fokus bleibt immer sichtbar (CLAUDE.md 7). Die Regel für Links, Knöpfe und
-     Felder steht in tokens.css; dies ist der Rückfall für alles andere. */
+  /* Fokus bleibt immer sichtbar (CLAUDE.md 7). */
   :focus-visible {
-    outline: var(--fokus-breite) solid var(--fokus-ring);
-    outline-offset: var(--fokus-versatz);
+    outline: 2px solid var(--fokus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-feld);
   }
 
   @media (prefers-reduced-motion: reduce) {

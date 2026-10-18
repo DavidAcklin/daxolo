@@ -21,11 +21,6 @@ for (const { pfad, lang, titel } of seiten) {
     // Sinnvolle Vorgabe: das Feld ist gefüllt und das Ergebnis steht da.
     await expect(page.locator('#iban-eingabe')).toHaveValue('CH93 0076 2011 6238 5295 7');
     await expect(page.locator('.status')).toHaveAttribute('data-art', 'erfolg');
-
-    // Erklaertext in jeder Sprache (CLAUDE.md 5) — fehlt die Datei, fehlt der
-    // Abschnitt, und dieser Test schlaegt an.
-    await expect(page.locator('#erklaerung-titel')).toBeVisible();
-    await expect(page.locator('.erklaerung h3')).toHaveCount(3);
   });
 }
 

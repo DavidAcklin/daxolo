@@ -295,11 +295,6 @@ Markenfarbe und eine Statusfarbe aus derselben Familie stammen, wird der Abstand
 bewusst hergestellt und geprüft — bei einem Prüfwerkzeug ist "gültig oder falsch" die
 Kernaussage und darf nie mit Markenfläche verwechselt werden.
 
-Farbprüfung umfasst zwei Messungen: Vorder- zu Hintergrund nach WCAG (4.5:1 für Text,
-3:1 für Rahmen, Fokusringe und bedeutungstragende Grafik) und den Abstand der Flächen
-untereinander (Ziel dE >= 8). Die zweite Messung prüft kein Werkzeug automatisch — sie
-wird bei jeder Farbänderung von Hand gerechnet und das Ergebnis dokumentiert.
-
 Alle Farbwerte liegen als Tokens in `src/styles/tokens.css`. Rohe Hex-Werte im Markup
 sind ein Fehler.
 
