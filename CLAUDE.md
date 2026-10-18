@@ -301,6 +301,10 @@ angrenzende Fläche) und den Abstand bedeutungstragender Flächen untereinander 
 CIEDE2000 (Ziel dE ≥ 8). Beide Messungen laufen als automatischer Test über tokens.css
 und sind ein CI-Gate.
 
+Eine Farbrolle ist nur dann dekorativ, wenn die Oberfläche ohne sie vollständig bedienbar
+bleibt und jede Komponente erkennbar ist. Jede Ausnahme im Farbtest nennt ihre Begründung an
+diesem Kriterium, nicht nur das Wort „dekorativ“.
+
 Alle Farbwerte liegen als Tokens in `src/styles/tokens.css`. Rohe Hex-Werte im Markup
 sind ein Fehler.
 
