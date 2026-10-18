@@ -39,10 +39,26 @@ function code(eingabe: string): IbanFehlerCode {
   return ergebnis.code;
 }
 
-function treffer(eingabe: string) {
+/** Erwartet die vollstaendige Pruefung — nur CH und LI erreichen sie. */
+function vollstaendig(eingabe: string) {
   const ergebnis = pruefeIban(eingabe);
   if (!ergebnis.ok) {
     throw new Error(`Erwartet: gueltig. Erhalten: ${ergebnis.code} — ${ergebnis.nachricht}`);
+  }
+  if (ergebnis.umfang !== 'vollstaendig') {
+    throw new Error(`Erwartet: vollstaendige Pruefung. Erhalten: ${ergebnis.umfang}`);
+  }
+  return ergebnis;
+}
+
+/** Erwartet die abgestufte Aussage: Pruefziffer stimmt, Aufbau ungeprueft. */
+function nurPruefziffer(eingabe: string) {
+  const ergebnis = pruefeIban(eingabe);
+  if (!ergebnis.ok) {
+    throw new Error(`Erwartet: gueltig. Erhalten: ${ergebnis.code} — ${ergebnis.nachricht}`);
+  }
+  if (ergebnis.umfang !== 'nur-pruefziffer') {
+    throw new Error(`Erwartet: nur-pruefziffer. Erhalten: ${ergebnis.umfang}`);
   }
   return ergebnis;
 }
@@ -102,7 +118,7 @@ describe('istQrIid', () => {
 describe('pruefeIban — offizielle Testvektoren', () => {
   it('nimmt die IBAN der Beispielrechnungen an', () => {
     for (const iban of [IBAN_OFFIZIELL, IBAN_OFFIZIELL_2, SIX_BEISPIEL]) {
-      const ergebnis = treffer(iban);
+      const ergebnis = vollstaendig(iban);
       expect(ergebnis.land).toBe('CH');
       expect(ergebnis.istQrIban).toBe(false);
     }
@@ -110,12 +126,12 @@ describe('pruefeIban — offizielle Testvektoren', () => {
 
   it('erkennt die QR-IBAN der Beispielrechnungen', () => {
     for (const iban of [QR_IBAN_OFFIZIELL, QR_IBAN_OFFIZIELL_2]) {
-      expect(treffer(iban).istQrIban).toBe(true);
+      expect(vollstaendig(iban).istQrIban).toBe(true);
     }
   });
 
   it('zerlegt die IBAN in IID und Kontonummer', () => {
-    const ergebnis = treffer(QR_IBAN_OFFIZIELL);
+    const ergebnis = vollstaendig(QR_IBAN_OFFIZIELL);
     expect(ergebnis.iban).toBe(QR_IBAN_OFFIZIELL);
     expect(ergebnis.formatiert).toBe('CH44 3199 9123 0008 8901 2');
     expect(ergebnis.iid).toBe('31999');
@@ -124,33 +140,19 @@ describe('pruefeIban — offizielle Testvektoren', () => {
   });
 
   it('liest die IBAN auch mit Leerzeichen und klein geschrieben', () => {
-    expect(treffer('ch44 3199 9123 0008 8901 2').iban).toBe(QR_IBAN_OFFIZIELL);
+    expect(vollstaendig('ch44 3199 9123 0008 8901 2').iban).toBe(QR_IBAN_OFFIZIELL);
   });
 });
 
 describe('pruefeIban — Landeserkennung', () => {
   it('nimmt Liechtenstein an', () => {
-    const ergebnis = treffer(LI_IBAN);
+    const ergebnis = vollstaendig(LI_IBAN);
     expect(ergebnis.land).toBe('LI');
     expect(ergebnis.istQrIban).toBe(false);
   });
 
   it('erkennt eine liechtensteinische QR-IBAN', () => {
-    expect(treffer(LI_QR_IBAN).istQrIban).toBe(true);
-  });
-
-  it('weist andere Laender als unbekannt ab', () => {
-    // Formal gueltige deutsche IBAN — hier trotzdem ausserhalb des Auftrags.
-    expect(code('DE89370400440532013000')).toBe('unbekanntes-land');
-  });
-
-  it('sagt bei unbekanntem Land, welche Laender gelten', () => {
-    const ergebnis = pruefeIban('DE89370400440532013000');
-    expect(ergebnis.ok).toBe(false);
-    if (!ergebnis.ok) {
-      expect(ergebnis.nachricht).toContain('CH');
-      expect(ergebnis.nachricht).toContain('LI');
-    }
+    expect(vollstaendig(LI_QR_IBAN).istQrIban).toBe(true);
   });
 
   it('weist einen Landescode aus Ziffern ab', () => {
@@ -158,15 +160,79 @@ describe('pruefeIban — Landeserkennung', () => {
   });
 });
 
+/**
+ * Auslaendische IBAN: Modulo 97-10 ist landesunabhaengig rechenbar, Laenge und
+ * Aufbau nicht. Dann gilt die abgestufte Aussage statt eines Fehlers
+ * (CLAUDE.md 2.5).
+ *
+ * Testvektoren sind die gaengigen Beispiel-IBAN der jeweiligen Laender; ihr
+ * Rest modulo 97 ist ausserhalb dieses Codes nachgerechnet.
+ */
+describe('pruefeIban — Laender ausserhalb CH und LI', () => {
+  const AUSLAND = [
+    'DE89370400440532013000',
+    'AT611904300234573201',
+    'FR1420041010050500013M02606',
+    'GB82WEST12345698765432',
+  ] as const;
+
+  it('bricht nicht ab, sondern rechnet die Pruefziffer', () => {
+    for (const iban of AUSLAND) {
+      const ergebnis = nurPruefziffer(iban);
+      expect(ergebnis.ok).toBe(true);
+      expect(ergebnis.umfang).toBe('nur-pruefziffer');
+      expect(ergebnis.land).toBe(iban.slice(0, 2));
+    }
+  });
+
+  it('trennt "Pruefziffer stimmt" von "Aufbau ungeprueft"', () => {
+    const ergebnis = nurPruefziffer('DE89370400440532013000');
+    // Die Zusage steckt im Umfang, nicht in einem Fliesstext.
+    expect(ergebnis.umfang).toBe('nur-pruefziffer');
+    // Und die Grenze steht ausdruecklich daneben.
+    expect(ergebnis.ungeprueft).toContain('Länge');
+    expect(ergebnis.ungeprueft).toContain('Aufbau');
+    expect(ergebnis.ungeprueft).toContain('DE');
+    expect(ergebnis.ungeprueft).toContain('CH');
+    expect(ergebnis.ungeprueft).toContain('LI');
+  });
+
+  it('gibt keine schweizerischen Felder aus, die es nicht belegen kann', () => {
+    const ergebnis = nurPruefziffer('DE89370400440532013000');
+    expect('iid' in ergebnis).toBe(false);
+    expect('kontonummer' in ergebnis).toBe(false);
+    expect('istQrIban' in ergebnis).toBe(false);
+  });
+
+  it('formatiert auch abweichende Laengen in Vierergruppen', () => {
+    expect(nurPruefziffer('DE89370400440532013000').formatiert).toBe('DE89 3704 0044 0532 0130 00');
+  });
+
+  it('meldet eine falsche Pruefziffer auch im Ausland als Tippfehler', () => {
+    const ergebnis = pruefeIban('DE89370400440532013001');
+    expect(ergebnis.ok).toBe(false);
+    if (!ergebnis.ok) {
+      expect(ergebnis.code).toBe('pruefziffer-falsch');
+      expect(ergebnis.nachricht).toContain('vertippt');
+    }
+  });
+
+  it('meldet eine Eingabe, die fuer eine IBAN zu kurz ist', () => {
+    const ergebnis = pruefeIban('XX12');
+    expect(ergebnis.ok).toBe(false);
+    if (!ergebnis.ok) expect(ergebnis.code).toBe('falsche-laenge');
+  });
+});
+
 describe('pruefeIban — QR-IBAN-Grenzen', () => {
   it('ist bei 30000 und 31999 eine QR-IBAN', () => {
-    expect(treffer(IID_30000).istQrIban).toBe(true);
-    expect(treffer(QR_IBAN_OFFIZIELL).istQrIban).toBe(true);
+    expect(vollstaendig(IID_30000).istQrIban).toBe(true);
+    expect(vollstaendig(QR_IBAN_OFFIZIELL).istQrIban).toBe(true);
   });
 
   it('ist bei 29999 und 32000 keine QR-IBAN', () => {
-    expect(treffer(IID_29999).istQrIban).toBe(false);
-    expect(treffer(IID_32000).istQrIban).toBe(false);
+    expect(vollstaendig(IID_29999).istQrIban).toBe(false);
+    expect(vollstaendig(IID_32000).istQrIban).toBe(false);
   });
 });
 

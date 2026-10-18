@@ -1,0 +1,134 @@
+---
+/**
+ * Formularfeld mit Label und Inline-Fehler (CLAUDE.md 7 und 9).
+ *
+ * Jedes Feld hat ein `<label>` — der Platzhalter ist kein Label. Hinweis und
+ * Fehler hängen über `aria-describedby` am Feld, der Fehler zusätzlich über
+ * `aria-invalid`. Der Fehlerbereich existiert immer und ist `aria-live`, damit
+ * eine Meldung während der Eingabe angesagt wird, ohne den Fokus zu verlieren.
+ *
+ * Ein `name` entsteht nur, wenn er ausdrücklich gesetzt ist. Ein Feld ohne Namen
+ * wird beim Absenden nicht übertragen — läuft das Skript eines Werkzeugs nicht,
+ * landet die Eingabe sonst als Query-String in der URL und im Zugriffsprotokoll
+ * des Hosters (CLAUDE.md 2.6).
+ */
+interface Props {
+  id: string;
+  label: string;
+  /** Nur setzen, wenn das Feld wirklich übertragen werden soll. */
+  name?: string | undefined;
+  wert?: string | undefined;
+  platzhalter?: string | undefined;
+  /** Erklärung unter dem Label, immer sichtbar. */
+  hinweis?: string | undefined;
+  /** Fehlertext beim ersten Rendern. Danach übernimmt das Skript. */
+  fehler?: string | undefined;
+  inputmode?: 'text' | 'decimal' | 'numeric' | undefined;
+  autocomplete?: string | undefined;
+  /** Bildschirmtastatur: `characters` für IBAN und Referenzen. */
+  autocapitalize?: 'off' | 'characters' | undefined;
+  /** Zahlen und Referenzen laufen in Monospace. */
+  zahl?: boolean | undefined;
+}
+
+const {
+  id,
+  label,
+  name,
+  wert,
+  platzhalter,
+  hinweis,
+  fehler,
+  inputmode = 'text',
+  autocomplete = 'off',
+  autocapitalize,
+  zahl,
+} = Astro.props;
+
+const hinweisId = `${id}-hinweis`;
+const fehlerId = `${id}-fehler`;
+const beschriebenVon = [hinweis === undefined ? undefined : hinweisId, fehlerId]
+  .filter((eintrag) => eintrag !== undefined)
+  .join(' ');
+---
+
+<div class="feld">
+  <label for={id}>{label}</label>
+  {
+    hinweis !== undefined && (
+      <p class="hinweis" id={hinweisId}>
+        {hinweis}
+      </p>
+    )
+  }
+  <input
+    id={id}
+    name={name}
+    type="text"
+    value={wert}
+    placeholder={platzhalter}
+    inputmode={inputmode}
+    autocomplete={autocomplete}
+    autocapitalize={autocapitalize}
+    spellcheck="false"
+    class:list={['eingabe', { zahl }]}
+    aria-describedby={beschriebenVon}
+    aria-invalid={fehler === undefined ? undefined : 'true'}
+  />
+  <p class="fehler" id={fehlerId} aria-live="polite">{fehler}</p>
+</div>
+
+<style>
+  .feld {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  label {
+    font-size: var(--text-klein);
+    font-weight: 500;
+  }
+
+  .hinweis {
+    margin: 0;
+    color: var(--text-sekundaer);
+    font-size: var(--text-klein);
+  }
+
+  .eingabe {
+    background-color: var(--flaeche-innen);
+    color: var(--text-primaer);
+    border: 1px solid var(--linie-stark);
+    border-radius: var(--radius-feld);
+    padding: 0.6rem 0.75rem;
+    font: inherit;
+    inline-size: 100%;
+  }
+
+  .eingabe.zahl {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .eingabe[aria-invalid='true'] {
+    border-color: var(--fehler-text);
+  }
+
+  .eingabe::placeholder {
+    color: var(--text-gedaempft);
+  }
+
+  .fehler {
+    margin: 0;
+    min-block-size: 1lh;
+    color: var(--fehler-text);
+    font-size: var(--text-klein);
+  }
+
+  /* Leerer Fehlerbereich reserviert keine Höhe, solange nichts drinsteht. */
+  .fehler:empty {
+    min-block-size: 0;
+  }
+</style>

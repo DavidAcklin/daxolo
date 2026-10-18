@@ -1,13 +1,170 @@
-/*
- * Design-Tokens (CLAUDE.md 3).
+/* daxolo Design-Tokens
  *
- * Absichtlich leer: Das Design-System kommt in einem eigenen Schritt. Sobald es
- * existiert, stehen Farben, Abstaende, Schriftgroessen und Radien ausschliesslich
- * hier — im Markup gibt es keine rohen Hex-Werte.
+ * Markenfarbe: Rosa. Statusfarben bewusst aus anderen Familien, damit
+ * "gültig / falsch" nie mit Markenfläche verwechselt wird (CLAUDE.md 6).
  *
- * Kontrast mindestens 4.5:1 in beiden Themes (CLAUDE.md 6).
+ * Alle Vorder-/Hintergrundpaare wurden auf mindestens 4.5:1 geprüft,
+ * in beiden Modi. Werte in den Kommentaren.
+ *
+ * Rohe Hex-Werte gehören ausschliesslich in diese Datei.
+ * Im Markup wird nur über Tokens gearbeitet.
  */
 
 @theme {
-  /* noch keine Tokens definiert */
+  /* ---------- Marke: Rosa ---------- */
+  --color-marke-50: #fbeaf0;
+  --color-marke-100: #f4c0d1;
+  --color-marke-200: #ed93b1;
+  --color-marke-400: #d4537e;
+  --color-marke-600: #993556;
+  --color-marke-800: #72243e;
+  --color-marke-900: #4b1528;
+
+  /* ---------- Neutrale: leicht warm, damit sie zu Rosa passen ---------- */
+  --color-neutral-0: #ffffff;
+  --color-neutral-25: #faf8f8;
+  --color-neutral-50: #f4f1f2;
+  --color-neutral-100: #e8e3e5;
+  --color-neutral-200: #d6cfd2;
+  --color-neutral-400: #7a7175;
+  --color-neutral-600: #5a5356;
+  --color-neutral-800: #2e2a2c;
+  --color-neutral-900: #1c1a1b;
+  --color-neutral-950: #171415;
+
+  /* ---------- Status ---------- */
+  --color-erfolg-bg: #eaf3de;
+  --color-erfolg-text: #2f5a0d;
+  --color-erfolg-bg-dunkel: #24331a;
+  --color-erfolg-text-dunkel: #c0dd97;
+
+  --color-warnung-bg: #faeeda;
+  --color-warnung-text: #6b400a;
+  --color-warnung-bg-dunkel: #3a2a10;
+  --color-warnung-text-dunkel: #fac775;
+
+  --color-fehler-bg: #fcebeb;
+  --color-fehler-text: #8f2323;
+  --color-fehler-bg-dunkel: #3a1d1d;
+  --color-fehler-text-dunkel: #f09595;
+
+  /* ---------- Radien: genau drei, plus Pille ---------- */
+  --radius-kachel: 16px;
+  --radius-innen: 12px;
+  --radius-feld: 8px;
+  --radius-pille: 999px;
+
+  /* ---------- Typografie ---------- */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --text-mikro: 0.6875rem; /* 11px — Einheiten, Fussnoten */
+  --text-klein: 0.8125rem; /* 13px — Hilfstexte, Labels   */
+  --text-basis: 0.9375rem; /* 15px — Fliesstext           */
+  --text-gross: 1.125rem; /* 18px — Abschnittstitel      */
+  --text-titel: 1.5rem; /* 24px — Werkzeugtitel        */
+
+  /* ---------- Abstände ---------- */
+  --spacing-kachel: 1.5rem;
+  --spacing-innen: 1rem;
+  --spacing-eng: 0.625rem;
+}
+
+/* ---------- Rollen: hell ---------- */
+:root {
+  color-scheme: light;
+
+  --flaeche-seite: var(--color-neutral-25);
+  --flaeche-kachel: var(--color-neutral-50);
+  --flaeche-innen: var(--color-neutral-0);
+
+  --text-primaer: var(--color-neutral-900); /* 16.36:1 auf Seite */
+  --text-sekundaer: var(--color-neutral-600); /*  7.48:1 auf innen */
+  --text-gedaempft: var(--color-neutral-400); /*  4.72:1 auf innen */
+
+  --linie: var(--color-neutral-100);
+  --linie-stark: var(--color-neutral-200);
+
+  --marke-flaeche: var(--color-marke-50);
+  --marke-text-auf-flaeche: var(--color-marke-800); /* 8.90:1 */
+  --marke-aktion: var(--color-marke-600); /* 7.00:1 gegen Weiss */
+  --marke-aktion-text: var(--color-neutral-0);
+  --marke-aktion-hover: var(--color-marke-800);
+
+  --erfolg-flaeche: var(--color-erfolg-bg);
+  --erfolg-text: var(--color-erfolg-text); /* 7.10:1 */
+  --warnung-flaeche: var(--color-warnung-bg);
+  --warnung-text: var(--color-warnung-text); /* 7.75:1 */
+  --fehler-flaeche: var(--color-fehler-bg);
+  --fehler-text: var(--color-fehler-text); /* 7.49:1 */
+
+  --fokus-ring: var(--color-marke-600);
+}
+
+/* ---------- Rollen: dunkel ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-modus='hell']) {
+    color-scheme: dark;
+
+    --flaeche-seite: var(--color-neutral-950);
+    --flaeche-kachel: #211d1f;
+    --flaeche-innen: #2a2528;
+
+    --text-primaer: #f2edef; /* 15.81:1 */
+    --text-sekundaer: #a9a0a4; /*  6.55:1 */
+    --text-gedaempft: #8a8085;
+
+    --linie: #373134;
+    --linie-stark: #4a4246;
+
+    --marke-flaeche: #3d1a29;
+    --marke-text-auf-flaeche: var(--color-marke-200); /* 7.47:1 */
+    /* Aktion: 4.65:1 — besteht, aber ohne Reserve.
+       Wird der Ton je aufgehellt, muss der Text auf Weiss wechseln. */
+    --marke-aktion: var(--color-marke-400);
+    --marke-aktion-text: var(--color-neutral-950);
+    --marke-aktion-hover: var(--color-marke-200);
+
+    --erfolg-flaeche: var(--color-erfolg-bg-dunkel);
+    --erfolg-text: var(--color-erfolg-text-dunkel); /* 8.97:1 */
+    --warnung-flaeche: var(--color-warnung-bg-dunkel);
+    --warnung-text: var(--color-warnung-text-dunkel); /* 8.88:1 */
+    --fehler-flaeche: var(--color-fehler-bg-dunkel);
+    --fehler-text: var(--color-fehler-text-dunkel); /* 6.87:1 */
+
+    --fokus-ring: var(--color-marke-200);
+  }
+}
+
+[data-modus='dunkel'] {
+  color-scheme: dark;
+  --flaeche-seite: var(--color-neutral-950);
+  --flaeche-kachel: #211d1f;
+  --flaeche-innen: #2a2528;
+  --text-primaer: #f2edef;
+  --text-sekundaer: #a9a0a4;
+  --text-gedaempft: #8a8085;
+  --linie: #373134;
+  --linie-stark: #4a4246;
+  --marke-flaeche: #3d1a29;
+  --marke-text-auf-flaeche: var(--color-marke-200);
+  --marke-aktion: var(--color-marke-400);
+  --marke-aktion-text: var(--color-neutral-950);
+  --marke-aktion-hover: var(--color-marke-200);
+  --erfolg-flaeche: var(--color-erfolg-bg-dunkel);
+  --erfolg-text: var(--color-erfolg-text-dunkel);
+  --warnung-flaeche: var(--color-warnung-bg-dunkel);
+  --warnung-text: var(--color-warnung-text-dunkel);
+  --fehler-flaeche: var(--color-fehler-bg-dunkel);
+  --fehler-text: var(--color-fehler-text-dunkel);
+  --fokus-ring: var(--color-marke-200);
+}
+
+/* ---------- Zahlen ---------- */
+/* Beträge, IBAN, Referenzen: gleiche Ziffernbreite, damit Spalten
+   untereinander vergleichbar bleiben (CLAUDE.md 6, Leitplanke 5). */
+.zahl {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }

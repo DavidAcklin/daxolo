@@ -1,0 +1,124 @@
+---
+/**
+ * Statusblock — die einzige Stelle mit Symbol (CLAUDE.md 6, Leitplanke 4).
+ *
+ * Farbe trägt hier Bedeutung, deshalb steht sie nie allein: Symbol und Text
+ * sagen dasselbe aus, damit die Aussage auch ohne Farbwahrnehmung ankommt.
+ * Die Statusfarben stammen bewusst aus anderen Familien als die Marke — bei
+ * einem Prüfwerkzeug darf "gültig" nie wie Markenfläche aussehen.
+ *
+ * Alle drei Symbole stehen im Markup, sichtbar ist das zur `art` passende. So
+ * kann ein Skript den Status wechseln, indem es `data-art` setzt — ohne HTML
+ * nachzubauen, das hier schon steht.
+ */
+interface Props {
+  art: 'erfolg' | 'warnung' | 'fehler';
+  titel: string;
+  /** Für Screenreader vorangestellt, z. B. "Fehler". */
+  artName: string;
+  id?: string | undefined;
+}
+
+const { art, titel, artName, id } = Astro.props;
+---
+
+<div class="status" data-art={art} id={id}>
+  <span class="symbol" aria-hidden="true">
+    <svg
+      class="s-erfolg"
+      viewBox="0 0 20 20"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M4 10.5 8 14.5 16 6" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    <svg
+      class="s-warnung"
+      viewBox="0 0 20 20"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M10 3 18.5 17.5H1.5L10 3Z" stroke-linejoin="round"></path>
+      <path d="M10 8v4" stroke-linecap="round"></path>
+      <path d="M10 14.8h.01" stroke-linecap="round"></path>
+    </svg>
+    <svg
+      class="s-fehler"
+      viewBox="0 0 20 20"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M5 5l10 10M15 5 5 15" stroke-linecap="round"></path>
+    </svg>
+  </span>
+  <div class="inhalt">
+    <p class="titel">
+      <span class="sr-only" data-artname>{artName}: </span><span data-titel>{titel}</span>
+    </p>
+    <slot />
+  </div>
+</div>
+
+<style>
+  .status {
+    display: flex;
+    gap: var(--spacing-eng);
+    align-items: flex-start;
+    border-radius: var(--radius-innen);
+    padding: var(--spacing-innen);
+  }
+
+  .status[data-art='erfolg'] {
+    background-color: var(--erfolg-flaeche);
+    color: var(--erfolg-text);
+  }
+
+  .status[data-art='warnung'] {
+    background-color: var(--warnung-flaeche);
+    color: var(--warnung-text);
+  }
+
+  .status[data-art='fehler'] {
+    background-color: var(--fehler-flaeche);
+    color: var(--fehler-text);
+  }
+
+  .symbol {
+    display: flex;
+    flex: none;
+    /* Optisch auf die erste Textzeile ausgerichtet. */
+    margin-block-start: 0.1em;
+  }
+
+  .symbol svg {
+    display: none;
+  }
+
+  .status[data-art='erfolg'] .s-erfolg,
+  .status[data-art='warnung'] .s-warnung,
+  .status[data-art='fehler'] .s-fehler {
+    display: block;
+  }
+
+  .inhalt {
+    min-inline-size: 0;
+  }
+
+  .titel {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .inhalt :global(p) {
+    margin-block: 0.35rem 0;
+  }
+</style>

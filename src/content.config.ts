@@ -65,10 +65,17 @@ const tools = defineCollection({
  *
  * Damit ist eine fehlende Uebersetzung eine fehlende Datei: sichtbar, ohne
  * Sonderfall im Schema. Der Text steht im Markdown-Body (min. 150 Woerter), die
- * Frontmatter bleibt leer.
+ * Frontmatter bleibt leer. Zwischentitel sind `###`: die h2 "Erklaerung" setzt
+ * das ToolLayout, der Text liegt eine Ebene darunter.
  */
 const erklaerungen = defineCollection({
-  loader: glob({ base: './src/content/erklaerungen', pattern: '**/*.md' }),
+  loader: glob({
+    base: './src/content/erklaerungen',
+    pattern: '**/*.md',
+    // Die Id ist der Dateiname ohne Endung: `iban-pruefer.de`. Ohne das
+    // schluckt die Standard-Id den Punkt, und der Sprachteil geht verloren.
+    generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+  }),
   schema: z.object({}).strict(),
 });
 

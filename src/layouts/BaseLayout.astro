@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import ModusUmschalter from '../components/ModusUmschalter.astro';
 import { localeTags, locales, type Locale } from '../i18n/ui';
 import {
   getLocaleFromUrl,
@@ -49,30 +50,109 @@ const alternateUrls = locales
     <link rel="canonical" href={canonical.href} />
     {alternateUrls.map((alt) => <link rel="alternate" hreflang={alt.tag} href={alt.href} />)}
     <link rel="alternate" hreflang="x-default" href={new URL(localePath('de'), base).href} />
+
+    {/* Schrift der ersten Textzeile vorladen, damit LCP nicht auf sie wartet. */}
+    <link
+      rel="preload"
+      href="/fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+
+    {
+      /*
+      Farbmodus setzen, bevor gezeichnet wird — sonst blitzt beim Laden der
+      helle Modus auf. Inline und synchron, deshalb kein `type="module"`.
+      Gespeichert wird in localStorage, nicht in einem Cookie (CLAUDE.md 10).
+    */
+    }
+    <script is:inline>
+      try {
+        const modus = localStorage.getItem('daxolo-modus');
+        if (modus === 'hell' || modus === 'dunkel') {
+          document.documentElement.dataset.modus = modus;
+        }
+      } catch {
+        /* localStorage gesperrt: dann entscheidet prefers-color-scheme. */
+      }
+    </script>
+
     <meta name="generator" content={Astro.generator} />
     <slot name="head" />
   </head>
   <body>
     <a href="#inhalt" class="sr-only focus:not-sr-only">{t('skip.link')}</a>
 
-    <header>
+    <header class="kopf seite">
       <nav aria-label={t('nav.label')}>
-        <ul>
-          <li><a href={localePath(locale)}>{t('site.name')}</a></li>
+        <ul class="navliste">
+          <li><a href={localePath(locale)} class="marke">{t('site.name')}</a></li>
           <li><a href={werkzeugePath(locale)}>{t('nav.tools')}</a></li>
         </ul>
       </nav>
-      <LanguageSwitcher alternates={alternates} />
+      <div class="schalter">
+        <ModusUmschalter />
+        <LanguageSwitcher alternates={alternates} />
+      </div>
     </header>
 
-    <main id="inhalt">
+    <main id="inhalt" class="seite">
       <slot />
     </main>
 
-    <footer>
+    <footer class="fuss seite">
       {/* CLAUDE.md 2.1 — das Verkaufsargument steht auf jeder Seite. */}
       <p>{t('footer.privacy')}</p>
-      {/* TODO: Impressum und Datenschutzerklaerung in allen Sprachen (CLAUDE.md 9). */}
+      {/* TODO: Impressum und Datenschutzerklaerung in allen Sprachen (CLAUDE.md 10). */}
     </footer>
   </body>
 </html>
+
+<style>
+  .kopf {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-innen);
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--spacing-innen);
+  }
+
+  .navliste {
+    display: flex;
+    gap: var(--spacing-innen);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--text-klein);
+  }
+
+  .navliste a {
+    text-decoration: none;
+  }
+
+  .marke {
+    font-weight: 500;
+    color: var(--text-primaer);
+    text-decoration: none;
+  }
+
+  .schalter {
+    display: flex;
+    gap: var(--spacing-eng);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .fuss {
+    color: var(--text-sekundaer);
+    font-size: var(--text-klein);
+    border-block-start: 1px solid var(--linie);
+    margin-block-start: var(--spacing-kachel);
+  }
+
+  .fuss p {
+    margin: 0;
+  }
+</style>

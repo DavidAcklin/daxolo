@@ -84,8 +84,10 @@ lösen keine Bewilligungsfragen aus. Diese Eigenschaft geben wir nicht auf.
   Korrektur. Runden ist ein fachlicher Entscheid und gehört dorthin, wo er begründet
   werden kann.
 - **Mehrdeutige Eingaben werden abgewiesen, nicht geraten.** `1.000` kann tausend oder
-  eins bedeuten; falsch geraten sind das drei Grössenordnungen. Die Fehlermeldung nennt
-  in solchen Fällen **beide korrekten Schreibweisen**, damit die Nutzerin entscheidet.
+  eins bedeuten; falsch geraten sind das drei Grössenordnungen. Dasselbe gilt für `1.005`
+  — lesbar als 1005 oder als 1.00 mit zu vielen Stellen. `0.005` ist dagegen nicht
+  mehrdeutig, weil `0'005` keine plausible Schreibweise ist. Die Fehlermeldung nennt bei
+  Mehrdeutigkeit **beide korrekten Schreibweisen**, damit die Nutzerin entscheidet.
 - Beträge und Stückpreise sind fachlich verschieden. Wenn später höhere Präzision nötig
   wird (Mengen, Einheitspreise), entsteht dafür ein **eigener Typ mit eigener
   Parse-Funktion** — `parseBetrag` wird dafür nicht aufgeweicht.
@@ -114,8 +116,8 @@ Bekannter Stand (Nachweis in den Datendateien führen, nicht hier):
 Für die QR-Rechnung gelten die *Schweizer Implementation Guidelines QR-Rechnung* von
 SIX Interbank Clearing.
 
-- **Aktueller Stand:** IG Version 2.3, in Kraft seit 22.11.2025. Nur noch die
-  **strukturierte Adresse** ist zugelassen; die kombinierte Adresse ist tot.
+- **Aktueller Stand:** IG Version 2.3, gültig ab 21.11.2025 (Dokumentdatum 20.11.2023).
+  Nur noch die **strukturierte Adresse** ist zugelassen; die kombinierte Adresse ist tot.
 - **Kommend:** IG Version 2.4, in Kraft mit dem SIC-Release vom 13./14.11.2026.
 
 Die Spec-Version ist ein **expliziter Parameter im Code**, keine verstreute Annahme.
@@ -135,6 +137,14 @@ das wir nicht zurückkaufen können.
 Konkret bedeutet das: Vor der Implementation einer Fachregel wird die Quelle benannt.
 Ohne Quelle keine Regel. Erfundene Grenzwerte, geratene Fristen oder aus dem Gedächtnis
 zitierte Prozentsätze sind ein schwerer Fehler.
+
+**Fehlende Belege führen zu einer abgestuften Aussage, nicht zur Verweigerung.**
+Was wir prüfen können, prüfen wir; was wir nicht belegen können, benennen wir als
+ungeprüft. Beispiel: Bei einer ausländischen IBAN ist Modulo 97-10 landesunabhängig
+rechenbar, Länge und Aufbau mangels geprüftem Register nicht. Dann lautet die Antwort
+"Prüfziffer stimmt, Aufbau für dieses Land nicht geprüft" — nicht "unbekannt".
+Ein Teilergebnis mit klarer Grenze ist ehrlich und nützlich. Ein pauschales Nein ist
+nur bequem.
 
 ### 2.6 Keine Nutzerdaten verlassen den Browser
 
@@ -258,7 +268,39 @@ Jedes Tool liefert vollständig:
 
 ---
 
-## 6. Barrierefreiheit
+## 6. Design-System
+
+Formensprache sind **Kacheln** — abgerundete Flächen, wie sie Schweizer Nutzer:innen von
+SBB oder Swisscom kennen. Innerhalb der Kacheln gilt redaktionelle Ruhe: viel Weissraum,
+Haarlinien statt Rahmen, Farbe nur mit Bedeutung.
+
+Fünf Leitplanken, damit die Sammlung über vierzig Werkzeuge hinweg zusammengehört:
+
+1. **Höchstens eine Verschachtelungsstufe.** Kachel enthält Inhalt oder Tabelle. Nie
+   Kachel in Kachel in Kachel — sonst braucht es vier unterscheidbare Flächentöne in
+   zwei Modi.
+2. **Drei Radien, keiner mehr.** 16 px aussen, 12 px innen, 8 px für Felder. Pillenform
+   nur für Buttons und Badges.
+3. **Farbe nur mit Bedeutung.** Eine Markenfarbe, dazu Erfolg, Warnung, Fehler. Keine
+   dekorative Einfärbung, keine Farbe je Kategorie.
+4. **Symbole nur bei Status.** Kein Symbol je Werkzeug, kein Symbol je Kachel.
+5. **Zahlen immer in Monospace und rechtsbündig.** Beträge, die untereinander verglichen
+   werden, brauchen gleiche Ziffernbreite.
+
+**Tabellen kommen als Ganzes in eine Kachel**, Zeilen werden durch Haarlinien getrennt.
+Niemals eine Kachel je Datenzeile.
+
+Markenfarbe und Statusfarben müssen auf den ersten Blick unterscheidbar bleiben. Wo
+Markenfarbe und eine Statusfarbe aus derselben Familie stammen, wird der Abstand
+bewusst hergestellt und geprüft — bei einem Prüfwerkzeug ist "gültig oder falsch" die
+Kernaussage und darf nie mit Markenfläche verwechselt werden.
+
+Alle Farbwerte liegen als Tokens in `src/styles/tokens.css`. Rohe Hex-Werte im Markup
+sind ein Fehler.
+
+---
+
+## 7. Barrierefreiheit
 
 Nicht optional, nicht "später".
 
@@ -273,7 +315,7 @@ Nicht optional, nicht "später".
 
 ---
 
-## 7. Performance-Budget
+## 8. Performance-Budget
 
 - LCP < 1.5 s, CLS < 0.1
 - JS pro Tool-Seite < 30 kB gzip (Ausnahmen für PDF- und QR-Erzeugung begründen)
@@ -283,7 +325,7 @@ Nicht optional, nicht "später".
 
 ---
 
-## 8. Fehlerbehandlung
+## 9. Fehlerbehandlung
 
 Nutzereingaben sind ungültig, bis bewiesen ist, dass sie es nicht sind.
 
@@ -294,7 +336,7 @@ Nutzereingaben sind ungültig, bis bewiesen ist, dass sie es nicht sind.
 
 ---
 
-## 9. Rechtliches
+## 10. Rechtliches
 
 - Impressum und Datenschutzerklärung in allen Sprachen, aus dem Footer jeder Seite.
 - Tools mit rechtlicher oder finanzieller Wirkung (QR-Rechnung, MwSt, Fristen, Lohn)
@@ -306,7 +348,7 @@ Nutzereingaben sind ungültig, bis bewiesen ist, dass sie es nicht sind.
 
 ---
 
-## 10. Git
+## 11. Git
 
 - Branches: `feat/<slug>`, `fix/<beschreibung>`, `chore/<beschreibung>`
 - Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`)
@@ -323,13 +365,13 @@ Nutzereingaben sind ungültig, bis bewiesen ist, dass sie es nicht sind.
 6. `npm audit --audit-level=high`
 7. **Lighthouse CI** gegen den gebauten Output
 
-Eine Qualitätsvorgabe, die niemand automatisch prüft, ist keine Vorgabe. Wenn Abschnitt 7
+Eine Qualitätsvorgabe, die niemand automatisch prüft, ist keine Vorgabe. Wenn Abschnitt 8
 Lighthouse 100 fordert, muss die Pipeline es messen — sonst streichen wir die Forderung
 ehrlicherweise.
 
 ---
 
-## 11. Wenn du unsicher bist
+## 12. Wenn du unsicher bist
 
 Frag nach, statt zu raten. Zwingend bei:
 

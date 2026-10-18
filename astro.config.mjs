@@ -29,6 +29,14 @@ export default defineConfig({
     '/': '/de/',
   },
 
+  // CLAUDE.md 8: LCP < 1.5 s. Jedes Stylesheet als eigene Datei blockiert das
+  // erste Zeichnen; auf Werkzeugseiten kostete das zweite rund 300 ms und hob
+  // das LCP auf 1.51 s. Eingebettet entfällt die Anfrage. Der Preis: die
+  // Basis-CSS wird nicht seitenübergreifend gecacht — rund 4 kB gzip je Seite.
+  build: {
+    inlineStylesheets: 'always',
+  },
+
   vite: {
     plugins: [tailwindcss()],
   },

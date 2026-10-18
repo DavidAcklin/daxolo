@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import Kachel from '../components/Kachel.astro';
 import { localeTags, type Locale } from '../i18n/ui';
 import { getLocaleFromUrl, useTranslations } from '../i18n/utils';
 
@@ -17,7 +18,7 @@ interface Props {
   stand?: string | undefined;
   /** Amtliche Stelle hinter den Fachdaten. */
   quelle?: { name: string; url: string } | undefined;
-  /** Text bei rechtlicher oder finanzieller Wirkung (CLAUDE.md 9). */
+  /** Text bei rechtlicher oder finanzieller Wirkung (CLAUDE.md 10). */
   haftungsausschluss?: string | undefined;
   alternates?: Partial<Record<Locale, string>> | undefined;
 }
@@ -37,26 +38,26 @@ const standFormatiert =
 ---
 
 <BaseLayout title={title} description={description} alternates={alternates}>
-  <article>
+  <article class="werkzeug stapel">
     <header>
       <h1>{title}</h1>
-      <p>{description}</p>
+      <p class="einleitung">{description}</p>
     </header>
 
     {/* Das Tool. Island, laedt bei Bedarf (CLAUDE.md 5). */}
     <slot />
 
     {
-      (standFormatiert || quelle) && (
-        <p data-herkunft>
-          {standFormatiert && (
+      (standFormatiert !== undefined || quelle !== undefined) && (
+        <p class="herkunft">
+          {standFormatiert !== undefined && (
             <span>
               {t('tool.stand')}: <time datetime={stand}>{standFormatiert}</time>
             </span>
           )}
-          {quelle && (
+          {quelle !== undefined && (
             <span>
-              {' · '}
+              {standFormatiert !== undefined && ' · '}
               {t('tool.source')}:{' '}
               <a href={quelle.url} rel="noopener noreferrer">
                 {quelle.name}
@@ -68,11 +69,10 @@ const standFormatiert =
     }
 
     {
-      haftungsausschluss && (
-        <aside aria-labelledby="haftungsausschluss">
-          <h2 id="haftungsausschluss">{t('tool.disclaimer.title')}</h2>
-          <p>{haftungsausschluss}</p>
-        </aside>
+      haftungsausschluss !== undefined && (
+        <Kachel titel={t('tool.disclaimer.title')} titelId="haftungsausschluss">
+          <p class="klein">{haftungsausschluss}</p>
+        </Kachel>
       )
     }
 
@@ -81,11 +81,63 @@ const standFormatiert =
          fuer diese Sprache, entfaellt der Abschnitt — statt einer leeren
          Ueberschrift. */
       Astro.slots.has('erklaerung') && (
-        <section aria-labelledby="erklaerung">
-          <h2 id="erklaerung">{t('tool.explanation.title')}</h2>
+        <section class="erklaerung" aria-labelledby="erklaerung-titel">
+          <h2 id="erklaerung-titel">{t('tool.explanation.title')}</h2>
           <slot name="erklaerung" />
         </section>
       )
     }
   </article>
 </BaseLayout>
+
+<style>
+  .werkzeug {
+    gap: var(--spacing-kachel);
+  }
+
+  .werkzeug > header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .werkzeug h1 {
+    margin: 0;
+  }
+
+  .einleitung {
+    margin: 0;
+    color: var(--text-sekundaer);
+  }
+
+  .herkunft {
+    margin: 0;
+    color: var(--text-sekundaer);
+    font-size: var(--text-klein);
+  }
+
+  .klein {
+    margin: 0;
+    color: var(--text-sekundaer);
+    font-size: var(--text-klein);
+  }
+
+  .erklaerung {
+    border-block-start: 1px solid var(--linie);
+    padding-block-start: var(--spacing-kachel);
+  }
+
+  .erklaerung :global(h2) {
+    font-size: var(--text-gross);
+  }
+
+  .erklaerung :global(h3) {
+    font-size: var(--text-basis);
+    margin-block: var(--spacing-kachel) 0;
+  }
+
+  .erklaerung :global(p) {
+    margin-block: 0.75rem 0;
+    color: var(--text-sekundaer);
+  }
+</style>

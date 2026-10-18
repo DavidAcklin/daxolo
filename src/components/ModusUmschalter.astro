@@ -1,0 +1,134 @@
+---
+import type { Locale } from '../i18n/ui';
+import { getLocaleFromUrl, useTranslations } from '../i18n/utils';
+
+/**
+ * Umschalter hell / dunkel / automatisch (CLAUDE.md 6).
+ *
+ * Drei Radios statt drei Knöpfe: die Auswahl ist eine Auswahl, und die
+ * Pfeiltasten funktionieren ohne eigenen Code. Ohne JavaScript bleibt es bei
+ * "automatisch" — dann entscheidet `prefers-color-scheme`, und die Seite ist
+ * vollständig benutzbar.
+ *
+ * Gespeichert wird in `localStorage`, nicht in einem Cookie: die Einstellung
+ * geht niemanden ausser dem Browser etwas an, und ohne Cookie gibt es auch
+ * keinen Banner (CLAUDE.md 10).
+ *
+ * Kein Flackern beim Laden, an zwei Stellen: Das Inline-Skript im `<head>` von
+ * BaseLayout setzt `data-modus` auf `<html>`, bevor gezeichnet wird. Und die
+ * sichtbare Auswahl hier folgt diesem Attribut, nicht dem Radio — das Radio
+ * gleicht erst das Modulskript an, und das läuft nach dem ersten Zeichnen.
+ * Hinge die Markierung am Radio, spränge sie beim Laden von "automatisch" auf
+ * den gespeicherten Modus.
+ */
+const locale: Locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const optionen = [
+  { wert: 'hell', label: t('modus.hell') },
+  { wert: 'dunkel', label: t('modus.dunkel') },
+  { wert: 'automatisch', label: t('modus.automatisch') },
+] as const;
+---
+
+<fieldset class="umschalter" data-modus-umschalter>
+  <legend class="sr-only">{t('modus.label')}</legend>
+  {
+    optionen.map((option) => (
+      <span class="option">
+        <input
+          type="radio"
+          name="daxolo-modus"
+          id={`modus-${option.wert}`}
+          value={option.wert}
+          checked={option.wert === 'automatisch'}
+        />
+        <label for={`modus-${option.wert}`} data-text={option.label}>
+          {option.label}
+        </label>
+      </span>
+    ))
+  }
+</fieldset>
+
+<script>
+  const SCHLUESSEL = 'daxolo-modus';
+  const umschalter = document.querySelector<HTMLFieldSetElement>('[data-modus-umschalter]');
+
+  if (umschalter !== null) {
+    const gespeichert = localStorage.getItem(SCHLUESSEL) ?? 'automatisch';
+    const aktiv = umschalter.querySelector<HTMLInputElement>(`input[value="${gespeichert}"]`);
+    if (aktiv !== null) aktiv.checked = true;
+
+    umschalter.addEventListener('change', (ereignis) => {
+      const ziel = ereignis.target;
+      if (!(ziel instanceof HTMLInputElement)) return;
+
+      if (ziel.value === 'automatisch') {
+        delete document.documentElement.dataset.modus;
+        localStorage.removeItem(SCHLUESSEL);
+      } else {
+        document.documentElement.dataset.modus = ziel.value;
+        localStorage.setItem(SCHLUESSEL, ziel.value);
+      }
+    });
+  }
+</script>
+
+<style>
+  .umschalter {
+    display: flex;
+    gap: 0.15rem;
+    border: 1px solid var(--linie-stark);
+    border-radius: var(--radius-pille);
+    padding: 0.15rem;
+    margin: 0;
+  }
+
+  .option {
+    display: flex;
+  }
+
+  /* Das Radio bleibt bedienbar, wird aber vom Label verdeckt. */
+  input {
+    position: absolute;
+    opacity: 0;
+    inline-size: 1px;
+    block-size: 1px;
+  }
+
+  label {
+    display: inline-grid;
+    justify-items: center;
+    border-radius: var(--radius-pille);
+    padding: 0.25rem 0.7rem;
+    font-size: var(--text-klein);
+    color: var(--text-sekundaer);
+    cursor: pointer;
+  }
+
+  /* Breite der fetten Fassung reservieren: sonst verschiebt der Wechsel des
+     Schnitts die Nachbarn. `visibility: hidden` hält den doppelten Text auch aus
+     dem Namen heraus, den Screenreader vorlesen. */
+  label::after {
+    content: attr(data-text);
+    font-weight: 500;
+    block-size: 0;
+    visibility: hidden;
+    overflow: hidden;
+  }
+
+  /* Markiert ist, was auf <html> steht. Ohne data-modus gilt "automatisch". */
+  :global(:root[data-modus='hell']) label[for='modus-hell'],
+  :global(:root[data-modus='dunkel']) label[for='modus-dunkel'],
+  :global(:root:not([data-modus='hell'], [data-modus='dunkel'])) label[for='modus-automatisch'] {
+    background-color: var(--marke-flaeche);
+    color: var(--marke-text-auf-flaeche);
+    font-weight: 500;
+  }
+
+  input:focus-visible + label {
+    outline: 2px solid var(--fokus-ring);
+    outline-offset: 2px;
+  }
+</style>
