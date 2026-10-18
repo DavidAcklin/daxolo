@@ -85,6 +85,29 @@ describe('befund — Fehler', () => {
   });
 });
 
+describe('befund — Ort der Aussage', () => {
+  it('stellt jedes Urteil in den Ergebnisbereich, gueltig wie ungueltig', () => {
+    expect(befund(BEISPIEL_IBAN)?.ort).toBe('ergebnis');
+    expect(befund('DE89370400440532013000')?.ort).toBe('ergebnis');
+    expect(befund('CH9400762011623852957')?.ort).toBe('ergebnis');
+  });
+
+  it('stellt Formfehler ans Feld, weil es noch nichts zu urteilen gibt', () => {
+    for (const eingabe of ['CH930076201162385295', 'XX12', 'CH93-0762011623852957', '12345']) {
+      const ergebnis = befund(eingabe);
+      expect(ergebnis?.status, eingabe).toBe('fehler');
+      expect(ergebnis?.ort, eingabe).toBe('feld');
+    }
+  });
+
+  it('haengt an Formfehler weder Tabelle noch Erlaeuterung', () => {
+    const ergebnis = befund('CH930076201162385295');
+    expect(ergebnis?.zeilen).toEqual([]);
+    expect(ergebnis?.texte).toEqual([]);
+    expect(ergebnis?.kopierwert).toBeUndefined();
+  });
+});
+
 describe('Texte', () => {
   it('sind in allen Sprachen vollstaendig', () => {
     const schluessel = Object.keys(texte.de).sort();

@@ -2,7 +2,7 @@ Der IBAN-Prüfer rechnet die Prüfziffer einer IBAN nach und zerlegt schweizeris
 liechtensteinische Nummern in ihre Bestandteile. Die Prüfung läuft vollständig in deinem
 Browser; die eingegebene Nummer verlässt dein Gerät nicht.
 
-## Was Modulo 97-10 leistet
+### Was Modulo 97-10 leistet
 
 Jede IBAN trägt an Stelle 3 und 4 eine zweistellige Prüfziffer. Sie entsteht nach dem
 Verfahren Modulo 97-10 gemäss ISO/IEC 7064: Landescode und Prüfziffer wandern ans Ende,
@@ -17,7 +17,7 @@ eingegebenen Kontonummer gehören würde, und überlässt dir den Schluss. Und e
 nicht jede Verfälschung: Rund eine von 97 zufälligen Ziffernfolgen besteht die Prüfung
 rein rechnerisch.
 
-## Was eine QR-IBAN unterscheidet
+### Was eine QR-IBAN unterscheidet
 
 Formal unterscheiden sich IBAN und QR-IBAN nicht; beide folgen ISO 13616. Der Unterschied
 steckt an Stelle 5 bis 9, in der Instituts-Identifikation. Liegt sie im Bereich 30000 bis
@@ -26,7 +26,7 @@ das Verfahren mit QR-Referenz reserviert: Eine QR-IBAN verlangt zwingend eine QR
 eine gewöhnliche IBAN schliesst sie aus. Wer beides vertauscht, produziert Rechnungen, die
 Banken zurückweisen. Eine QR-IBAN dient ausserdem nur Zahlungseingängen.
 
-## Warum das Konto trotzdem nicht existieren muss
+### Warum das Konto trotzdem nicht existieren muss
 
 Die Prüfziffer ist reine Arithmetik. Sie beweist, dass die Ziffernfolge in sich stimmig
 ist — nicht, dass die Bank existiert, das Konto eröffnet ist, der Name zur Nummer passt

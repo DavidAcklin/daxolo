@@ -1,19 +1,23 @@
 ---
 import Feld from '../../components/Feld.astro';
 import Kachel from '../../components/Kachel.astro';
+import KachelTabelle, { type Zelle } from '../../components/KachelTabelle.astro';
 import Knopf from '../../components/Knopf.astro';
 import Statusblock from '../../components/Statusblock.astro';
 import type { Locale } from '../../i18n/ui';
-import { BEISPIEL_IBAN, befund } from './logic';
-import { formatiere, texte } from './texte';
+import { BEISPIEL_IBAN, befund, type Zeile } from './logic';
+import { formatiere, texte, type TextKey } from './texte';
 
 /**
  * Oberfläche des IBAN-Prüfers.
  *
  * Die Seite kommt fertig geprüft aus dem Build: das Beispiel steht im Feld, sein
- * Ergebnis darunter (CLAUDE.md 5). Das Skript aktualisiert nur, was sich ändert
- * — es baut kein HTML nach, das hier schon steht. Ohne JavaScript bleibt das
- * Beispielergebnis stehen und die Seite ist lesbar.
+ * Ergebnis darunter (CLAUDE.md 5). Das Skript aktualisiert nur, was sich ändert.
+ * Ohne JavaScript bleibt das Beispielergebnis stehen und die Seite ist lesbar.
+ *
+ * Wohin eine Aussage gehört, entscheidet `befund().ort`: Formfehler stehen inline
+ * am Feld, das Urteil im Statusblock der Ergebnis-Kachel. Jede Aussage steht an
+ * genau einer Stelle und wird genau einmal angesagt.
  */
 interface Props {
   locale: Locale;
@@ -23,11 +27,24 @@ const { locale } = Astro.props;
 const t = texte[locale];
 
 const start = befund(BEISPIEL_IBAN);
+const urteil = start?.ort === 'ergebnis' ? start : undefined;
+const startFehler = start?.ort === 'feld' ? formatiere(t[start.titel], start.werte) : undefined;
+
 const statusName = {
   erfolg: t['status.erfolg'],
   warnung: t['status.warnung'],
   fehler: t['status.fehler'],
 };
+
+// Ein Wert ist entweder Text aus der Prüfung oder ein Textschlüssel wie
+// `zeile.qr-iban`, der übersetzt wird.
+const wertText = (zeile: Zeile) =>
+  zeile.wert.startsWith('zeile.') ? t[zeile.wert as TextKey] : zeile.wert;
+
+const zeilen: Zelle[][] = (urteil?.zeilen ?? []).map((zeile) => [
+  t[zeile.schluessel],
+  { text: wertText(zeile), zahl: zeile.zahl },
+]);
 
 // Das Skript braucht dieselben Texte im Browser. Sie stehen als JSON im Markup,
 // damit kein zweiter Netzwerkzugriff nötig ist (CLAUDE.md 2.6).
@@ -40,57 +57,55 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
       id="iban-eingabe"
       label={t['feld.label']}
       wert={BEISPIEL_IBAN}
-      platzhalter={t['feld.platzhalter']}
       hinweis={t['feld.hinweis']}
-      autocomplete="off"
+      fehler={startFehler}
+      autocapitalize="characters"
       zahl
     />
     {
-      /* Ohne JavaScript prüft der Knopf beim Absenden nichts — die Seite bleibt
-        trotzdem nutzbar, weil das Beispielergebnis schon dasteht. */
+      /* Ohne JavaScript lädt der Knopf die Seite neu, mehr nicht: das Feld hat
+         keinen Namen, die Eingabe gelangt nicht in die URL. */
     }
     <Knopf typ="submit">{t['aktion.pruefen']}</Knopf>
   </form>
 </Kachel>
 
-<div class="ergebnis" data-ergebnis aria-live="polite">
-  {
-    start !== undefined && (
-      <Statusblock art={start.status} titel={t[start.titel]} artName={statusName[start.status]}>
-        {start.texte.map((schluessel) => (
-          <p data-text>{formatiere(t[schluessel], start.werte)}</p>
-        ))}
-      </Statusblock>
-    )
-  }
-
-  <table class="werte" data-tabelle>
-    <caption class="sr-only">{t['ergebnis.titel']}</caption>
-    <thead class="sr-only">
-      <tr>
-        <th scope="col">{t['tabelle.feld']}</th>
-        <th scope="col">{t['tabelle.wert']}</th>
-      </tr>
-    </thead>
-    <tbody data-zeilen>
+<div data-ergebnis hidden={urteil === undefined}>
+  <KachelTabelle
+    titel={t['ergebnis.titel']}
+    beschriftung={t['tabelle.titel']}
+    spalten={[{ name: t['tabelle.feld'] }, { name: t['tabelle.wert'], zahl: true }]}
+    zeilen={zeilen}
+    zeilenkopf
+    kopfVerbergen
+    id="iban-werte"
+  >
+    <Statusblock
+      art={urteil?.status ?? 'erfolg'}
+      titel={urteil === undefined ? '' : formatiere(t[urteil.titel], urteil.werte)}
+      artName={statusName[urteil?.status ?? 'erfolg']}
+    >
       {
-        start?.zeilen.map((zeile) => (
-          <tr>
-            <th scope="row">{t[zeile.schluessel]}</th>
-            <td class={zeile.zahl ? 'zahl' : undefined}>
-              {zeile.wert.startsWith('zeile.') ? t[zeile.wert as keyof typeof t] : zeile.wert}
-            </td>
-          </tr>
-        ))
+        urteil !== undefined &&
+          urteil.texte.map((schluessel) => (
+            <p data-text>{formatiere(t[schluessel], urteil.werte)}</p>
+          ))
       }
-    </tbody>
-  </table>
+    </Statusblock>
 
-  <p class="aktionen" data-aktionen hidden={start?.kopierwert === undefined}>
-    <Knopf art="sekundaer" id="iban-kopieren">{t['aktion.kopieren']}</Knopf>
-    <span class="bestaetigung" data-bestaetigung role="status"></span>
-  </p>
+    <p slot="fuss" class="aktionen" data-aktionen hidden={urteil?.kopierwert === undefined}>
+      <Knopf art="sekundaer" id="iban-kopieren">{t['aktion.kopieren']}</Knopf>
+      <span class="bestaetigung" data-bestaetigung role="status"></span>
+    </p>
+  </KachelTabelle>
 </div>
+
+{
+  /* Eine einzige Ansage für das Urteil. Sie ist nie versteckt, damit der
+     Screenreader Änderungen auch dann meldet, wenn die Ergebnis-Kachel gerade
+     erst sichtbar wird. Formfehler meldet das Feld selbst. */
+}
+<p class="sr-only" data-ansage aria-live="polite" aria-atomic="true"></p>
 
 <script type="application/json" data-iban-texte set:html={skripttexte} is:inline />
 
@@ -100,110 +115,134 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
 
   type Woerterbuch = Record<string, string>;
 
-  const wurzel = document.querySelector<HTMLElement>('[data-ergebnis]');
   const eingabe = document.querySelector<HTMLInputElement>('#iban-eingabe');
-  const form = document.querySelector<HTMLFormElement>('[data-iban-form]');
+  const bereich = document.querySelector<HTMLElement>('[data-ergebnis]');
   const textblock = document.querySelector<HTMLScriptElement>('[data-iban-texte]');
 
-  if (wurzel !== null && eingabe !== null && textblock !== null) {
+  if (eingabe !== null && bereich !== null && textblock !== null) {
     const { texte, statusName } = JSON.parse(textblock.textContent ?? '{}') as {
       texte: Woerterbuch;
       statusName: Woerterbuch;
     };
+    const text = (schluessel: string, werte: Woerterbuch = {}) =>
+      formatiere(texte[schluessel] ?? schluessel, werte);
 
-    const status = wurzel.querySelector<HTMLElement>('.status');
-    const zeilen = wurzel.querySelector<HTMLElement>('[data-zeilen]');
-    const tabelle = wurzel.querySelector<HTMLElement>('[data-tabelle]');
-    const aktionen = wurzel.querySelector<HTMLElement>('[data-aktionen]');
-    const bestaetigung = wurzel.querySelector<HTMLElement>('[data-bestaetigung]');
-    const kopieren = document.querySelector<HTMLButtonElement>('#iban-kopieren');
+    const form = document.querySelector<HTMLFormElement>('[data-iban-form]');
     const fehlerfeld = document.querySelector<HTMLElement>('#iban-eingabe-fehler');
+    const ansage = document.querySelector<HTMLElement>('[data-ansage]');
+    const status = bereich.querySelector<HTMLElement>('.status');
+    const tabelle = bereich.querySelector<HTMLTableElement>('#iban-werte');
+    const aktionen = bereich.querySelector<HTMLElement>('[data-aktionen]');
+    const bestaetigung = bereich.querySelector<HTMLElement>('[data-bestaetigung]');
+    const kopieren = bereich.querySelector<HTMLButtonElement>('#iban-kopieren');
 
     let kopierwert = '';
 
-    function zeige(ergebnis: Befund | undefined) {
-      if (status === null || zeilen === null || tabelle === null) return;
+    // Live-Regionen melden jede Änderung, auch das Ersetzen durch denselben
+    // Text. Deshalb nur schreiben, was wirklich neu ist.
+    const setze = (element: HTMLElement | null, neu: string) => {
+      if (element !== null && element.textContent !== neu) element.textContent = neu;
+    };
 
-      if (ergebnis === undefined) {
-        status.hidden = true;
-        tabelle.hidden = true;
-        if (aktionen !== null) aktionen.hidden = true;
-        eingabe?.removeAttribute('aria-invalid');
-        if (fehlerfeld !== null) fehlerfeld.textContent = '';
+    const zeigeAmFeld = (ergebnis: Befund | undefined) => {
+      setze(fehlerfeld, ergebnis?.ort === 'feld' ? text(ergebnis.titel, ergebnis.werte) : '');
+      if (ergebnis?.status === 'fehler') eingabe.setAttribute('aria-invalid', 'true');
+      else eingabe.removeAttribute('aria-invalid');
+    };
+
+    const zeigeUrteil = (ergebnis: Befund | undefined, ansagen: boolean) => {
+      const urteil = ergebnis?.ort === 'ergebnis' ? ergebnis : undefined;
+
+      bereich.hidden = urteil === undefined;
+      kopierwert = urteil?.kopierwert ?? '';
+      if (aktionen !== null) aktionen.hidden = kopierwert === '';
+      setze(bestaetigung, '');
+
+      if (urteil === undefined || status === null || tabelle === null) {
+        setze(ansage, '');
         return;
       }
 
-      status.hidden = false;
-      status.dataset['art'] = ergebnis.status;
+      const titel = text(urteil.titel, urteil.werte);
+      const erlaeuterungen = urteil.texte.map((schluessel) => text(schluessel, urteil.werte));
 
-      const artname = status.querySelector<HTMLElement>('[data-artname]');
-      const titel = status.querySelector<HTMLElement>('[data-titel]');
-      if (artname !== null) artname.textContent = `${statusName[ergebnis.status] ?? ''}: `;
-      if (titel !== null)
-        titel.textContent = formatiere(texte[ergebnis.titel] ?? '', ergebnis.werte);
+      status.dataset['art'] = urteil.status;
+      setze(
+        status.querySelector<HTMLElement>('[data-artname]'),
+        `${statusName[urteil.status] ?? ''}: `,
+      );
+      setze(status.querySelector<HTMLElement>('[data-titel]'), titel);
 
       // Erläuterungen: vorhandene Absätze wiederverwenden, Rest entfernen.
       const inhalt = status.querySelector<HTMLElement>('.inhalt');
       if (inhalt !== null) {
         const vorhanden = [...inhalt.querySelectorAll<HTMLElement>('[data-text]')];
-        ergebnis.texte.forEach((schluessel, i) => {
+        erlaeuterungen.forEach((satz, i) => {
           const absatz = vorhanden[i] ?? inhalt.appendChild(document.createElement('p'));
           absatz.dataset['text'] = '';
-          absatz.textContent = formatiere(texte[schluessel] ?? '', ergebnis.werte);
+          absatz.textContent = satz;
         });
-        vorhanden.slice(ergebnis.texte.length).forEach((absatz) => absatz.remove());
+        vorhanden.slice(erlaeuterungen.length).forEach((absatz) => absatz.remove());
       }
 
-      // Die Fehlermeldung steht doppelt: am Feld für die Eingabe, im Statusblock
-      // für das Ergebnis. Beides ist aria-live, deshalb bekommt das Feld nur
-      // den kurzen Hinweis.
-      const istFehler = ergebnis.status === 'fehler';
-      eingabe?.setAttribute('aria-invalid', String(istFehler));
-      if (fehlerfeld !== null) {
-        fehlerfeld.textContent = istFehler
-          ? formatiere(texte[ergebnis.titel] ?? '', ergebnis.werte)
-          : '';
-      }
-
-      tabelle.hidden = ergebnis.zeilen.length === 0;
-      zeilen.replaceChildren(
-        ...ergebnis.zeilen.map((zeile) => {
+      // Zeilen nach dem Vertrag von KachelTabelle: Zeilenkopf als th, Wertspalte
+      // rechtsbündig (`ende`), Zahlen in Monospace (`zahl`).
+      tabelle.hidden = urteil.zeilen.length === 0;
+      tabelle.tBodies[0]?.replaceChildren(
+        ...urteil.zeilen.map((zeile) => {
           const tr = document.createElement('tr');
           const kopf = document.createElement('th');
           kopf.scope = 'row';
-          kopf.textContent = texte[zeile.schluessel] ?? zeile.schluessel;
+          kopf.textContent = text(zeile.schluessel);
           const wert = document.createElement('td');
-          if (zeile.zahl) wert.className = 'zahl';
-          wert.textContent = zeile.wert.startsWith('zeile.')
-            ? (texte[zeile.wert] ?? zeile.wert)
-            : zeile.wert;
+          wert.className = zeile.zahl ? 'ende zahl' : 'ende';
+          wert.textContent = zeile.wert.startsWith('zeile.') ? text(zeile.wert) : zeile.wert;
           tr.append(kopf, wert);
           return tr;
         }),
       );
 
-      kopierwert = ergebnis.kopierwert ?? '';
-      if (aktionen !== null) aktionen.hidden = kopierwert === '';
-      if (bestaetigung !== null) bestaetigung.textContent = '';
-    }
+      if (ansagen) {
+        setze(
+          ansage,
+          [`${statusName[urteil.status] ?? ''}: ${titel}`, ...erlaeuterungen].join(' '),
+        );
+      }
+    };
 
-    // Einmal zum Start: das Skript uebernimmt den Zustand, den der Build
-    // gerendert hat. Sonst kennt es den Kopierwert erst nach der ersten
-    // Eingabe — und Server und Browser koennten auseinanderlaufen, ohne dass
-    // es auffaellt.
-    zeige(befund(eingabe.value));
+    const zeige = (ansagen: boolean) => {
+      const ergebnis = befund(eingabe.value);
+      zeigeAmFeld(ergebnis);
+      zeigeUrteil(ergebnis, ansagen);
+    };
 
-    eingabe.addEventListener('input', () => zeige(befund(eingabe.value)));
+    // Einmal zum Start, ohne Ansage: Der Browser kann beim Zurückblättern einen
+    // anderen Feldinhalt wiederherstellen als den, den der Build gerendert hat.
+    zeige(false);
+
+    eingabe.addEventListener('input', () => zeige(true));
     form?.addEventListener('submit', (ereignis) => {
       ereignis.preventDefault();
-      zeige(befund(eingabe.value));
+      zeige(true);
     });
 
     kopieren?.addEventListener('click', () => {
-      if (kopierwert === '') return;
-      void navigator.clipboard.writeText(kopierwert).then(() => {
-        if (bestaetigung !== null) bestaetigung.textContent = texte['aktion.kopiert'] ?? '';
-      });
+      if (kopierwert === '' || bestaetigung === null) return;
+      const melde = (gelungen: boolean) => {
+        bestaetigung.toggleAttribute('data-fehler', !gelungen);
+        bestaetigung.textContent = text(gelungen ? 'aktion.kopiert' : 'aktion.kopieren-fehler');
+      };
+      // Ohne sicheren Kontext gibt es keine Zwischenablage, und der Browser darf
+      // den Zugriff verweigern. Beides endet in einer Meldung, nicht in einer
+      // unbehandelten Ausnahme (CLAUDE.md 9).
+      if (navigator.clipboard === undefined) {
+        melde(false);
+        return;
+      }
+      navigator.clipboard.writeText(kopierwert).then(
+        () => melde(true),
+        () => melde(false),
+      );
     });
   }
 </script>
@@ -216,52 +255,9 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
     align-items: flex-start;
   }
 
-  .ergebnis {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-innen);
-    margin-block-start: var(--spacing-innen);
-  }
-
-  .werte {
-    inline-size: 100%;
-    border-collapse: collapse;
-    background-color: var(--flaeche-kachel);
-    border-radius: var(--radius-kachel);
-    padding: var(--spacing-kachel);
-    /* Tabelle als Ganzes in einer Kachel (CLAUDE.md 6). */
-    display: block;
-  }
-
-  .werte th[scope='row'] {
-    text-align: start;
-    font-weight: 400;
-    color: var(--text-sekundaer);
-    font-size: var(--text-klein);
-    padding-block: var(--spacing-eng);
-    padding-inline-end: var(--spacing-innen);
-    border-block-start: 1px solid var(--linie);
-    inline-size: 40%;
-  }
-
-  .werte td {
-    padding-block: var(--spacing-eng);
-    border-block-start: 1px solid var(--linie);
-    text-align: end;
-  }
-
-  .werte tbody tr:first-child th,
-  .werte tbody tr:first-child td {
-    border-block-start: none;
-  }
-
-  .werte td.zahl {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-  }
-
   .aktionen {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--spacing-eng);
     margin: 0;
@@ -270,5 +266,9 @@ const skripttexte = JSON.stringify({ texte: t, statusName });
   .bestaetigung {
     color: var(--erfolg-text);
     font-size: var(--text-klein);
+  }
+
+  .bestaetigung[data-fehler] {
+    color: var(--fehler-text);
   }
 </style>

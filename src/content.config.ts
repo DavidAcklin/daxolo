@@ -65,7 +65,8 @@ const tools = defineCollection({
  *
  * Damit ist eine fehlende Uebersetzung eine fehlende Datei: sichtbar, ohne
  * Sonderfall im Schema. Der Text steht im Markdown-Body (min. 150 Woerter), die
- * Frontmatter bleibt leer.
+ * Frontmatter bleibt leer. Zwischentitel sind `###`: die h2 "Erklaerung" setzt
+ * das ToolLayout, der Text liegt eine Ebene darunter.
  */
 const erklaerungen = defineCollection({
   loader: glob({

@@ -6,10 +6,16 @@
  * Fehler hängen über `aria-describedby` am Feld, der Fehler zusätzlich über
  * `aria-invalid`. Der Fehlerbereich existiert immer und ist `aria-live`, damit
  * eine Meldung während der Eingabe angesagt wird, ohne den Fokus zu verlieren.
+ *
+ * Ein `name` entsteht nur, wenn er ausdrücklich gesetzt ist. Ein Feld ohne Namen
+ * wird beim Absenden nicht übertragen — läuft das Skript eines Werkzeugs nicht,
+ * landet die Eingabe sonst als Query-String in der URL und im Zugriffsprotokoll
+ * des Hosters (CLAUDE.md 2.6).
  */
 interface Props {
   id: string;
   label: string;
+  /** Nur setzen, wenn das Feld wirklich übertragen werden soll. */
   name?: string | undefined;
   wert?: string | undefined;
   platzhalter?: string | undefined;
@@ -19,6 +25,8 @@ interface Props {
   fehler?: string | undefined;
   inputmode?: 'text' | 'decimal' | 'numeric' | undefined;
   autocomplete?: string | undefined;
+  /** Bildschirmtastatur: `characters` für IBAN und Referenzen. */
+  autocapitalize?: 'off' | 'characters' | undefined;
   /** Zahlen und Referenzen laufen in Monospace. */
   zahl?: boolean | undefined;
 }
@@ -33,6 +41,7 @@ const {
   fehler,
   inputmode = 'text',
   autocomplete = 'off',
+  autocapitalize,
   zahl,
 } = Astro.props;
 
@@ -54,12 +63,13 @@ const beschriebenVon = [hinweis === undefined ? undefined : hinweisId, fehlerId]
   }
   <input
     id={id}
-    name={name ?? id}
+    name={name}
     type="text"
     value={wert}
     placeholder={platzhalter}
     inputmode={inputmode}
     autocomplete={autocomplete}
+    autocapitalize={autocapitalize}
     spellcheck="false"
     class:list={['eingabe', { zahl }]}
     aria-describedby={beschriebenVon}
