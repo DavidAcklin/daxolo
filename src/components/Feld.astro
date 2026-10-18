@@ -99,7 +99,9 @@ const beschriebenVon = [hinweis === undefined ? undefined : hinweisId, fehlerId]
   .eingabe {
     background-color: var(--flaeche-innen);
     color: var(--text-primaer);
-    border: 1px solid var(--linie-stark);
+    /* 3:1 gegen Feld und Kachel, damit das Feld als Feld erkennbar ist
+       (WCAG 1.4.11). */
+    border: 1px solid var(--feld-rahmen);
     border-radius: var(--radius-feld);
     padding: 0.6rem 0.75rem;
     font: inherit;
@@ -112,12 +114,14 @@ const beschriebenVon = [hinweis === undefined ? undefined : hinweisId, fehlerId]
     letter-spacing: 0.02em;
   }
 
+  /* Der Fokusring hat Versatz (tokens.css), damit er im Fehlerfall nicht mit
+     diesem Rahmen verschmilzt. */
   .eingabe[aria-invalid='true'] {
-    border-color: var(--fehler-text);
+    border-color: var(--fehler-rahmen);
   }
 
   .eingabe::placeholder {
-    color: var(--text-gedaempft);
+    color: var(--text-platzhalter);
   }
 
   .fehler {
