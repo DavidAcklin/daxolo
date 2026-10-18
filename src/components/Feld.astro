@@ -114,10 +114,13 @@ const beschriebenVon = [hinweis === undefined ? undefined : hinweisId, fehlerId]
     letter-spacing: 0.02em;
   }
 
-  /* Der Fokusring hat Versatz (tokens.css), damit er im Fehlerfall nicht mit
+  /* Fehlerrahmen in der Breite aus tokens.css (2 px). Über den 1-px-Rahmen
+     hinaus kommt er als Innenschatten dazu — so springt der Inhalt beim Wechsel
+     in den Fehlerzustand nicht. Der Fokusring hat Versatz, damit er nicht mit
      diesem Rahmen verschmilzt. */
   .eingabe[aria-invalid='true'] {
     border-color: var(--fehler-rahmen);
+    box-shadow: inset 0 0 0 calc(var(--fehler-rahmen-breite) - 1px) var(--fehler-rahmen);
   }
 
   .eingabe::placeholder {
