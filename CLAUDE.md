@@ -308,6 +308,12 @@ diesem Kriterium, nicht nur das Wort „dekorativ“.
 Alle Farbwerte liegen als Tokens in `src/styles/tokens.css`. Rohe Hex-Werte im Markup
 sind ein Fehler.
 
+Nachbearbeitung von gerendertem Markup ist auf eine explizite Begriffsliste beschränkt —
+heute die Fachbegriffe, die nicht am Bindestrich umbrechen dürfen (`src/i18n/umbruch.ts`).
+Sie wirkt ausschliesslich auf Textknoten, nie auf Tags, Attribute oder Code. Jeder neue
+Begriff bringt seinen Test mit. Was sich im Markdown selbst ausdrücken lässt, wird dort
+ausgedrückt und nicht nachbearbeitet.
+
 ---
 
 ## 7. Barrierefreiheit
