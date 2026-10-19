@@ -68,11 +68,16 @@ for (const sprache of sprachen) {
   }
 }
 
-test('im Impressum stehen Name und Ort auf eigenen Zeilen', async ({ page }) => {
+test('Impressum und Datenschutz nennen die verantwortliche Person und ihre E-Mail', async ({
+  page,
+}) => {
   for (const sprache of sprachen) {
-    await page.goto(rechtstexte[sprache].impressum.pfad);
-    // Der Absatz, der mit dem Namen beginnt — nicht der zum Urheberrecht.
-    const adresse = page.locator('main p', { hasText: /^\s*David/ });
-    expect(await adresse.innerHTML()).toMatch(/^David<br>/);
+    for (const { pfad } of Object.values(rechtstexte[sprache])) {
+      await page.goto(pfad);
+      await expect(page.locator('main'), pfad).toContainText('David Acklin');
+      await expect(page.locator('main a[href="mailto:info@daxolo.ch"]').first(), pfad).toHaveText(
+        'info@daxolo.ch',
+      );
+    }
   }
 });

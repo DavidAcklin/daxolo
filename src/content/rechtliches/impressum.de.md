@@ -6,10 +6,9 @@ stand: 2026-10-19
 
 ## Verantwortlich für diese Website
 
-David\
-{{PLZ_ORT}}, Schweiz
+David Acklin
 
-E-Mail: {{EMAIL}}
+E-Mail: info@daxolo.ch
 
 daxolo ist ein privates Projekt. Es wird nicht gewerblich betrieben, ist nicht im
 Handelsregister eingetragen und nicht mehrwertsteuerpflichtig.
@@ -41,4 +40,4 @@ zertifiziert und steht in keiner geschäftlichen Beziehung zu SIX.
 
 ## Urheberrecht
 
-Die Inhalte dieser Website stehen unter dem Urheberrecht von David.
+Die Inhalte dieser Website stehen unter dem Urheberrecht von David Acklin.

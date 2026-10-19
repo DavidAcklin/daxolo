@@ -19,7 +19,7 @@ traffic while you use a tool.
 
 ## Responsible
 
-David, {{PLZ_ORT}}, Switzerland · Email: {{EMAIL}}
+David Acklin, Switzerland · Email: info@daxolo.ch
 
 ## What arises when you visit
 
@@ -39,14 +39,10 @@ not combine it with other data.
 network. Your request is generally answered from a location in Europe. Transmission to
 the USA is possible. Cloudflare is bound by standard contractual clauses and processes
 the data as our processor. The legal basis is our legitimate interest in the secure and
-reliable operation of the site.
-
-## Visitor numbers
-
-We collect anonymous access statistics in order to see which tools are being used. For
-this we use Cloudflare Web Analytics. This measurement works without a script on your
-device, without a cookie and without any identifier that makes you recognisable.
-Individual people cannot be identified and cannot be tracked across visits.
+reliable operation of the site. From this log data Cloudflare provides us with aggregate
+figures: number of requests, volume of data transferred and number of distinct visitors.
+This evaluation does not relate to individual people and contains no information about
+which page any particular person visited. We use no other analytics or statistics tools.
 
 ## Cookies
 
@@ -70,8 +66,8 @@ external servers.
 Under Swiss data protection law you have the right to information about, correction,
 deletion and release of your data, as well as the right to object to processing. As we
 process no personal data beyond the technical access data named above, information can
-generally only be given in general terms. For enquiries: {{EMAIL}}
+generally only be given in general terms. For enquiries: info@daxolo.ch
 
 ## Changes
 
-This policy applies as of {{STAND}}. It will be adapted if the processing changes.
+This policy applies as of 19 October 2026. It will be adapted if the processing changes.

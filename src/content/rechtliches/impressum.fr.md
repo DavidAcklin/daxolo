@@ -6,10 +6,9 @@ stand: 2026-10-19
 
 ## Responsable de ce site
 
-David\
-{{PLZ_ORT}}, Suisse
+David Acklin
 
-Courriel : {{EMAIL}}
+Courriel : info@daxolo.ch
 
 daxolo est un projet privé. Il n'est pas exploité à titre commercial, n'est pas inscrit
 au registre du commerce et n'est pas assujetti à la TVA.
@@ -42,4 +41,4 @@ n'entretient aucune relation commerciale avec SIX.
 
 ## Droit d'auteur
 
-Les contenus de ce site sont protégés par le droit d'auteur de David.
+Les contenus de ce site sont protégés par le droit d'auteur de David Acklin.

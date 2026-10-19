@@ -19,7 +19,7 @@ navigateur et en observant le trafic réseau pendant que vous utilisez un outil.
 
 ## Responsable
 
-David, {{PLZ_ORT}}, Suisse · Courriel : {{EMAIL}}
+David Acklin, Suisse · Courriel : info@daxolo.ch
 
 ## Ce qui est généré lors de la consultation
 
@@ -40,14 +40,11 @@ réparti dans le monde entier. Votre requête est en règle générale traitée 
 site en Europe. Une transmission vers les États-Unis est possible. Cloudflare est lié
 par des clauses contractuelles types et traite les données en tant que sous-traitant.
 La base légale est notre intérêt légitime à l'exploitation sûre et fiable du site.
-
-## Nombre de visiteurs
-
-Nous collectons des statistiques d'accès anonymes afin de voir quels outils sont
-utilisés. Nous recourons pour cela à Cloudflare Web Analytics. Cette mesure fonctionne
-sans script sur votre appareil, sans cookie et sans identifiant permettant de vous
-reconnaître. Elle ne permet ni d'identifier des personnes ni de les suivre d'une visite
-à l'autre.
+À partir de ces données de journalisation, Cloudflare met à notre disposition des chiffres
+agrégés : nombre de requêtes, volume de données transféré et nombre de visiteurs
+distincts. Cette évaluation ne porte pas sur des personnes individuelles et ne contient
+aucune indication sur la page qu’une personne déterminée a consultée. Nous n’utilisons
+aucun autre outil d’analyse ou de statistique.
 
 ## Cookies
 
@@ -73,9 +70,9 @@ En vertu de la loi suisse sur la protection des données, vous avez le droit d'a
 vos données, de les faire rectifier, effacer ou remettre, ainsi que le droit de vous
 opposer à un traitement. Comme nous ne traitons aucune donnée personnelle en dehors des
 données d'accès techniques mentionnées ci-dessus, un renseignement ne peut en règle
-générale être donné qu'à titre général. Pour toute demande : {{EMAIL}}
+générale être donné qu'à titre général. Pour toute demande : info@daxolo.ch
 
 ## Modifications
 
-La présente déclaration est valable dans sa version du {{STAND}}. Elle sera adaptée si
+La présente déclaration est valable dans sa version du 19 octobre 2026. Elle sera adaptée si
 le traitement change.

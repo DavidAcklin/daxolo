@@ -19,7 +19,7 @@ und den Netzwerkverkehr ansiehst, während du ein Werkzeug benutzt.
 
 ## Verantwortlich
 
-David, {{PLZ_ORT}}, Schweiz · E-Mail: {{EMAIL}}
+David Acklin, Schweiz · E-Mail: info@daxolo.ch
 
 ## Was beim Aufruf der Seite anfällt
 
@@ -40,15 +40,11 @@ verteiltes Netz. Deine Anfrage wird dabei in der Regel von einem Standort in Eur
 beantwortet. Eine Übermittlung in die USA ist möglich. Cloudflare ist auf Grundlage
 von Standardvertragsklauseln verpflichtet und verarbeitet die Daten als unser
 Auftragsbearbeiter. Rechtsgrundlage ist unser berechtigtes Interesse am sicheren und
-zuverlässigen Betrieb der Seite.
-
-## Besucherzahlen
-
-Wir erheben anonyme Zugriffsstatistiken, um zu sehen, welche Werkzeuge benutzt werden.
-Dafür setzen wir Cloudflare Web Analytics ein. Diese Messung läuft ohne Skript auf
-deinem Gerät, ohne Cookie und ohne Kennung, die dich wiedererkennbar macht. Einzelne
-Personen lassen sich damit nicht identifizieren und nicht über mehrere Besuche hinweg
-verfolgen.
+zuverlässigen Betrieb der Seite. Cloudflare stellt uns aus diesen Protokolldaten
+zusammengefasste Zahlen bereit — Anzahl Anfragen, übertragene Datenmenge und Anzahl
+unterschiedlicher Besucher. Diese Auswertung ist nicht auf einzelne Personen bezogen und
+enthält keine Angabe darüber, welche Seite eine bestimmte Person aufgerufen hat. Darüber
+hinaus setzen wir keine Analyse- oder Statistikwerkzeuge ein.
 
 ## Cookies
 
@@ -74,9 +70,9 @@ Nach dem Schweizer Datenschutzgesetz hast du das Recht auf Auskunft, Berichtigun
 Löschung und Herausgabe deiner Daten sowie das Recht, einer Bearbeitung zu
 widersprechen. Da wir ausser den oben genannten technischen Zugriffsdaten keine
 Personendaten bearbeiten, lässt sich eine Auskunft in der Regel nur allgemein
-erteilen. Für Anfragen: {{EMAIL}}
+erteilen. Für Anfragen: info@daxolo.ch
 
 ## Änderungen
 
-Diese Erklärung gilt im Stand vom {{STAND}}. Ändert sich die Bearbeitung, wird sie
+Diese Erklärung gilt im Stand vom 19. Oktober 2026. Ändert sich die Bearbeitung, wird sie
 angepasst.
