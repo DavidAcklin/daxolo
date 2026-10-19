@@ -6,9 +6,9 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
  * Smoke-Tests der Auslieferung: robots.txt, Sitemap und die Header aus
  * public/_headers.
  *
- * `astro preview` wendet _headers nicht an. Die Tests lesen die Datei deshalb so,
- * wie Cloudflare Pages sie liest, und setzen die Header der Regel "/*" auf jede
- * Antwort. Der Browser prüft damit genau die Policy, die ausgeliefert wird.
+ * Der Server ist wrangler pages dev (playwright.config.ts): Er wendet _headers
+ * so an wie Cloudflare Pages. Der Browser prüft damit genau die Policy, die
+ * ausgeliefert wird.
  */
 
 const PRODUKTION = 'https://daxolo.ch';
@@ -50,15 +50,11 @@ async function sitemap(request: APIRequestContext) {
 
 const lokal = (url: string) => url.replace(PRODUKTION, '');
 
-/** Liefert jede Antwort mit den Headern aus public/_headers aus und sammelt CSP-Verstösse. */
-async function wieAufPages(page: Page): Promise<string[]> {
+/** Sammelt die CSP-Verstösse, die der Browser meldet. */
+function cspVerstoesse(page: Page): string[] {
   const verstoesse: string[] = [];
   page.on('console', (meldung) => {
     if (/Content Security Policy/i.test(meldung.text())) verstoesse.push(meldung.text());
-  });
-  await page.route('**/*', async (route) => {
-    const antwort = await route.fetch();
-    await route.fulfill({ response: antwort, headers: { ...antwort.headers(), ...ALLE_SEITEN } });
   });
   return verstoesse;
 }
@@ -74,6 +70,15 @@ test('_headers bleibt in den Grenzen von Cloudflare Pages', () => {
     'referrer-policy',
     'x-content-type-options',
   ]);
+});
+
+test('jede Seite kommt mit den Headern aus _headers', async ({ request }) => {
+  for (const { loc } of await sitemap(request)) {
+    const antwort = await request.get(lokal(loc));
+    for (const [name, wert] of Object.entries(ALLE_SEITEN)) {
+      expect(antwort.headers()[name], `${loc}: ${name}`).toBe(wert);
+    }
+  }
 });
 
 test('robots.txt verweist auf die Sitemap der Produktionsdomain', async ({ request }) => {
@@ -127,7 +132,7 @@ test('jede Seite hat genau ein Inline-Skript, und die CSP erlaubt es per Hash', 
 });
 
 test('keine Seite verletzt die CSP aus _headers', async ({ page, request }) => {
-  const verstoesse = await wieAufPages(page);
+  const verstoesse = cspVerstoesse(page);
   for (const { loc } of await sitemap(request)) {
     await page.goto(lokal(loc));
     await page.waitForLoadState('networkidle');
@@ -138,7 +143,7 @@ test('keine Seite verletzt die CSP aus _headers', async ({ page, request }) => {
 test('unter der CSP setzt das Modus-Skript den gespeicherten Modus vor dem Zeichnen', async ({
   page,
 }) => {
-  const verstoesse = await wieAufPages(page);
+  const verstoesse = cspVerstoesse(page);
   await page.goto('/de/werkzeuge/iban-pruefer/');
   const wurzel = page.locator('html');
 

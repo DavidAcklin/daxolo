@@ -10,11 +10,11 @@
 #                           (src/layouts/BaseLayout.astro). Ändert es sich, ist
 #                           der Hash hier neu zu setzen; der Smoke-Test in
 #                           tests/e2e/auslieferung.spec.ts nennt den neuen Wert.
-#   style-src               Das CSS liegt inline im HTML (inlineStylesheets:
-#                           'always', LCP-Budget, CLAUDE.md 8) und unterscheidet
-#                           sich je Seite. Deshalb 'unsafe-inline' für Styles,
-#                           nie für Skripte. Abfluss über CSS ist trotzdem
-#                           gesperrt: img-src und font-src erlauben nur 'self'.
+#   style-src               'unsafe-inline' für Styles, nie für Skripte. Die Seite
+#                           ist statisch und rendert keine fremden Inhalte, ein
+#                           Einschleusungsweg existiert nicht. Und img-src,
+#                           font-src und style-src lassen als Quelle nur 'self'
+#                           zu — die Ausgänge sind also dicht.
 #   img-src, font-src       Favicon und selbst gehostete Schriften.
 #   base-uri 'none'         Kein eingeschleustes <base> kann relative URLs umbiegen.
 #   form-action 'self'      Formulare senden höchstens an die eigene Seite.

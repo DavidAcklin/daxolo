@@ -32,3 +32,6 @@ npm-debug.log*
 .env
 .env.production
 .env.local
+
+# Lokaler Zustand von wrangler pages dev
+.wrangler/

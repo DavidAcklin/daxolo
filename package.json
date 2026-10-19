@@ -10,6 +10,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "pages:dev": "npm run -s wrangler -- pages dev dist --port 4321 --ip 127.0.0.1",
     "astro": "astro",
     "typecheck": "astro check",
     "lint": "eslint .",
@@ -20,7 +21,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "audit:ci": "npm audit --audit-level=high",
-    "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun"
+    "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun",
+    "wrangler": "npx --yes wrangler@4.151.1"
   },
   "dependencies": {
     "astro": "^7.2.2"
