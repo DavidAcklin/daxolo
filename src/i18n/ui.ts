@@ -109,13 +109,13 @@ const fr: UiStrings = {
   'tool.disclaimer.title': 'Clause de non-responsabilité',
   'tool.disclaimer.text':
     'Les résultats sont fournis sans garantie et ne remplacent ni un conseil fiscal ni un ' +
-    'conseil juridique. La responsabilité de leur utilisation t’incombe.',
+    'conseil juridique. La responsabilité de leur utilisation vous incombe.',
   'tool.explanation.title': 'Explication',
   'footer.privacy':
-    'Tous les calculs se font dans ton navigateur. Tes données ne le quittent jamais.',
+    'Tous les calculs se font dans votre navigateur. Vos données ne le quittent jamais.',
   'notfound.title': 'Page introuvable',
   'notfound.text':
-    'Il n’existe aucune page à cette adresse. Vérifie l’orthographe ou cherche l’outil dans ' +
+    'Il n’existe aucune page à cette adresse. Vérifiez l’orthographe ou cherchez l’outil dans ' +
     'la vue d’ensemble.',
   'notfound.link': 'Vers la vue d’ensemble des outils',
   'footer.legal': 'Informations légales',

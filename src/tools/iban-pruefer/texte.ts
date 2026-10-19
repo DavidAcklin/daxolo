@@ -66,7 +66,7 @@ const fr: Texte = {
   'aktion.kopieren': 'Copier l’IBAN',
   'aktion.kopiert': 'Copié',
   'aktion.kopieren-fehler':
-    'Copie impossible. Sélectionne l’IBAN dans le tableau et copie-le manuellement.',
+    'Copie impossible. Sélectionnez l’IBAN dans le tableau et copiez-le manuellement.',
   'ergebnis.titel': 'Résultat',
   'status.erfolg': 'Succès',
   'status.warnung': 'Remarque',
@@ -90,18 +90,18 @@ const fr: Texte = {
   'tabelle.titel': 'Éléments de l’IBAN',
   'tabelle.feld': 'Champ',
   'tabelle.wert': 'Valeur',
-  'fehler.leer': 'Saisis un IBAN.',
+  'fehler.leer': 'Saisissez un IBAN.',
   'fehler.ungueltiges-zeichen':
     'La position {stelle} contient un caractère qui n’existe pas dans un IBAN. Seules les ' +
     'lettres et les chiffres sont admis.',
-  'fehler.falsche-laenge': 'Un IBAN {land} compte {soll} positions, le tien en a {ist}.',
+  'fehler.falsche-laenge': 'Un IBAN {land} compte {soll} positions, le vôtre en a {ist}.',
   'fehler.zu-kurz': 'C’est trop court pour un IBAN : {ist} positions.',
   'fehler.unbekanntes-land': 'Un IBAN commence par deux lettres désignant le pays.',
   'fehler.pruefziffer-falsch':
     'Les chiffres de contrôle ne correspondent pas au reste : l’IBAN comporte une faute de frappe.',
   'fehler.pruefziffer-hinweis':
     'Pour le numéro de compte saisi, les chiffres de contrôle seraient {passend}. Si le numéro de ' +
-    'compte est juste, corrige les positions 3 et 4 — sinon la faute est ailleurs.',
+    'compte est juste, corrigez les positions 3 et 4 — sinon la faute est ailleurs.',
 };
 
 const en: Texte = {

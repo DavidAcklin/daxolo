@@ -1,6 +1,6 @@
 Le vérificateur IBAN recalcule les chiffres de contrôle d’un IBAN et décompose les IBAN
 suisses et liechtensteinois en leurs éléments. La vérification se déroule entièrement dans
-ton navigateur ; le numéro saisi ne quitte pas ton appareil.
+votre navigateur ; le numéro saisi ne quitte pas votre appareil.
 
 ### Ce que permet la méthode modulo 97-10
 
@@ -14,7 +14,7 @@ Ce qu’elle ne permet pas : elle n’indique pas **quelle** position est fauss
 établit seulement que les chiffres de contrôle et le reste du numéro ne concordent pas —
 l’erreur peut tout aussi bien se trouver dans le numéro de compte. C’est pourquoi le message
 d’erreur indique les chiffres de contrôle qui correspondraient au numéro de compte saisi, et
-te laisse conclure. Elle ne détecte pas non plus toutes les altérations : environ une suite
+vous laisse conclure. Elle ne détecte pas non plus toutes les altérations : environ une suite
 de chiffres aléatoire sur 97 passe le contrôle par le seul calcul.
 
 ### Ce qui distingue un QR-IBAN
