@@ -151,13 +151,6 @@ const AUSNAHMEN: Record<string, Ausnahme> = {
       'Tabellenzeilen bleiben über Zeilenkopf, Ausrichtung und Abstand erkennbar, ' +
       'Erklärtext und Fuss über Überschrift und Abstand.',
   },
-  'linie-stark': {
-    verwendung:
-      'Zurzeit keine. Vorgesehen nur für Trennungen; Begrenzungen von Bedienelementen ' +
-      'nutzen --feld-rahmen.',
-    bedienbar: 'Sie steht an keinem Bedienelement.',
-    erkennbar: 'Keine Komponente ist auf sie angewiesen.',
-  },
 };
 
 const messwerte: string[] = [];

@@ -126,9 +126,6 @@
   --text-platzhalter: var(--color-neutral-450); /*  5.69:1 im Feld */
 
   --linie: var(--color-neutral-100); /* nur dekorative Trennung */
-  /* Nur für Trennungen, nie als Begrenzung eines Bedienelements — dafür gilt
-     --feld-rahmen. Zurzeit ohne Verwendung (Ausnahmeregister im Farbtest). */
-  --linie-stark: var(--color-neutral-200);
   /* Begrenzung von Bedienelementen: Feld, Farbmodus-Umschalter, sekundärer Knopf. */
   --feld-rahmen: var(--color-neutral-350); /*  3.32:1 auf Kachel — WCAG 1.4.11 */
 
@@ -165,7 +162,6 @@
     --text-platzhalter: #9a9095; /*  4.88:1 im Feld */
 
     --linie: #373134;
-    --linie-stark: #4a4246;
     --feld-rahmen: #85787e; /*  3.58:1 im Feld — WCAG 1.4.11 */
 
     --marke-flaeche: var(--color-marke-flaeche-dunkel);
@@ -199,7 +195,6 @@
   --text-gedaempft: #9a9095;
   --text-platzhalter: #9a9095;
   --linie: #373134;
-  --linie-stark: #4a4246;
   --feld-rahmen: #85787e;
   --marke-flaeche: var(--color-marke-flaeche-dunkel);
   --marke-text-auf-flaeche: var(--color-marke-200);
