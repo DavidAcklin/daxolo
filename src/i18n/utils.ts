@@ -1,4 +1,13 @@
-import { defaultLocale, locales, ui, werkzeugeSegment, type Locale, type UiKey } from './ui';
+import {
+  defaultLocale,
+  locales,
+  rechtstextSlug,
+  ui,
+  werkzeugeSegment,
+  type Locale,
+  type Rechtstext,
+  type UiKey,
+} from './ui';
 
 export function isLocale(value: string | undefined): value is Locale {
   return value !== undefined && (locales as readonly string[]).includes(value);
@@ -40,6 +49,11 @@ export function werkzeugePath(locale: Locale): string {
  */
 export function toolPath(locale: Locale, slug: string): string {
   return localePath(locale, `${werkzeugeSegment[locale]}/${slug}`);
+}
+
+/** Pfad eines Rechtstexts: `/de/impressum/`, `/fr/protection-des-donnees/`. */
+export function rechtstextPath(dokument: Rechtstext, locale: Locale): string {
+  return localePath(locale, rechtstextSlug[dokument][locale]);
 }
 
 /**

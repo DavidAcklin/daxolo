@@ -41,6 +41,20 @@ export const werkzeugeSegment: Record<Locale, string> = {
   en: 'tools',
 };
 
+/** Rechtstexte (CLAUDE.md 10). Der Schlüssel ist sprachneutral und steht in keiner URL. */
+export const rechtstexte = ['impressum', 'datenschutz'] as const;
+
+export type Rechtstext = (typeof rechtstexte)[number];
+
+/**
+ * Übersetzte Slugs der Rechtstexte: `/de/impressum/` · `/fr/mentions-legales/`.
+ * Einmal veröffentlicht, ist ein Slug unveränderlich (CLAUDE.md 4).
+ */
+export const rechtstextSlug: Record<Rechtstext, Record<Locale, string>> = {
+  impressum: { de: 'impressum', fr: 'mentions-legales', en: 'legal-notice' },
+  datenschutz: { de: 'datenschutz', fr: 'protection-des-donnees', en: 'privacy-policy' },
+};
+
 const de = {
   'site.name': 'daxolo',
   'site.tagline': 'Werkzeuge für Zahlungsverkehr und Finanzen in der Schweiz',
@@ -68,6 +82,9 @@ const de = {
     'Unter dieser Adresse gibt es keine Seite. Prüfe die Schreibweise oder suche das Werkzeug ' +
     'in der Übersicht.',
   'notfound.link': 'Zur Werkzeugübersicht',
+  'footer.legal': 'Rechtliches',
+  'footer.impressum': 'Impressum',
+  'footer.datenschutz': 'Datenschutz',
 } as const;
 
 /** Jede Sprache muss alle Schluessel bedienen — sonst schlaegt der Typecheck fehl. */
@@ -101,6 +118,9 @@ const fr: UiStrings = {
     'Il n’existe aucune page à cette adresse. Vérifie l’orthographe ou cherche l’outil dans ' +
     'la vue d’ensemble.',
   'notfound.link': 'Vers la vue d’ensemble des outils',
+  'footer.legal': 'Informations légales',
+  'footer.impressum': 'Mentions légales',
+  'footer.datenschutz': 'Protection des données',
 };
 
 const en: UiStrings = {
@@ -129,6 +149,9 @@ const en: UiStrings = {
   'notfound.text':
     'There is no page at this address. Check the spelling or find the tool in the overview.',
   'notfound.link': 'Go to the tool overview',
+  'footer.legal': 'Legal',
+  'footer.impressum': 'Legal notice',
+  'footer.datenschutz': 'Privacy policy',
 };
 
 export const ui: Record<Locale, UiStrings> = { de, fr, en };

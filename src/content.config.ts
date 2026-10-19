@@ -79,4 +79,30 @@ const erklaerungen = defineCollection({
   schema: z.object({}).strict(),
 });
 
-export const collections = { tools, erklaerungen };
+/**
+ * Rechtstexte (CLAUDE.md 10): Impressum und Datenschutzerklärung.
+ *
+ * Eine Datei je Dokument und Sprache nach dem Schema `<dokument>.<sprache>.md`,
+ * etwa `impressum.fr.md`. Das Dokument ist ein sprachneutraler Schlüssel; die
+ * übersetzten Slugs stehen in `src/i18n/ui.ts`. Alle drei Sprachen sind
+ * Pflicht: Fehlt eine Datei, bricht der Build der Route ab.
+ *
+ * Werte, die noch fehlen, stehen als Platzhalter wie `{{EMAIL}}` im Text. Der
+ * Build bricht ab, solange einer im Output steht (astro.config.mjs).
+ */
+const rechtliches = defineCollection({
+  loader: glob({
+    base: './src/content/rechtliches',
+    pattern: '**/*.md',
+    generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+  }),
+  schema: z
+    .object({
+      titel: z.string().min(1),
+      beschreibung: z.string().min(1).max(200),
+      stand: z.coerce.date(),
+    })
+    .strict(),
+});
+
+export const collections = { tools, erklaerungen, rechtliches };

@@ -1,0 +1,62 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import { locales, type Locale, type Rechtstext } from '../i18n/ui';
+import { umbruchfreiHtml } from '../i18n/umbruch';
+import { rechtstextPath } from '../i18n/utils';
+
+/**
+ * Impressum und Datenschutzerklärung (CLAUDE.md 10).
+ *
+ * Der Text kommt aus `src/content/rechtliches/<dokument>.<sprache>.md`. Fehlt
+ * die Datei, bricht der Build ab: ein Rechtstext fehlt nicht stillschweigend.
+ * Begriffe wie "QR-Rechnung" bleiben umbruchfrei, wie in den Erklärtexten.
+ */
+interface Props {
+  dokument: Rechtstext;
+  locale: Locale;
+}
+
+const { dokument, locale } = Astro.props;
+
+const eintrag = await getEntry('rechtliches', `${dokument}.${locale}`);
+if (eintrag?.rendered === undefined) {
+  throw new Error(`src/content/rechtliches/${dokument}.${locale}.md fehlt.`);
+}
+
+const html = umbruchfreiHtml(eintrag.rendered.html);
+const alternates = Object.fromEntries(
+  locales.map((sprache) => [sprache, rechtstextPath(dokument, sprache)]),
+);
+---
+
+<BaseLayout
+  title={eintrag.data.titel}
+  description={eintrag.data.beschreibung}
+  alternates={alternates}
+>
+  <article class="rechtstext">
+    <h1>{eintrag.data.titel}</h1>
+    <Fragment set:html={html} />
+  </article>
+</BaseLayout>
+
+<style>
+  .rechtstext h1 {
+    margin: 0;
+  }
+
+  .rechtstext :global(h2) {
+    margin-block: var(--spacing-kachel) 0;
+  }
+
+  .rechtstext :global(p),
+  .rechtstext :global(ul) {
+    margin-block: 0.75rem 0;
+  }
+
+  .rechtstext :global(ul) {
+    list-style: disc;
+    padding-inline-start: 1.25rem;
+  }
+</style>

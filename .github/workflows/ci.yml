@@ -49,7 +49,7 @@ jobs:
       - name: Sicherheitsaudit
         run: npm run audit:ci
 
-      # Bricht ab bei ungültiger Sitemap.
+      # Bricht ab bei Platzhaltern im Output und bei ungültiger Sitemap.
       - name: Build
         run: npm run build
 

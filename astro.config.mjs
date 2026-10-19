@@ -1,12 +1,44 @@
 // @ts-check
-import { access, readdir, readFile, rename, rmdir, writeFile } from 'node:fs/promises';
+import { access, readdir, readFile, rename, rmdir, stat, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import { locales } from './src/i18n/ui';
+import { findePlatzhalter } from './src/lib/platzhalter';
 import { eintragAusHtml, pruefeSitemap, sitemapXml } from './src/lib/sitemap';
 
 const SITE = 'https://daxolo.ch';
+
+/**
+ * Bricht den Build ab, solange ein Platzhalter wie {{EMAIL}} im Output steht
+ * (src/lib/platzhalter.ts). Durchsucht jede Datei ausser Binärformaten — so geht
+ * kein Rechtstext mit fehlenden Angaben live.
+ *
+ * @returns {import('astro').AstroIntegration}
+ */
+function platzhalter() {
+  const BINAER = /\.(woff2?|png|jpe?g|gif|webp|avif|ico|pdf)$/i;
+  return {
+    name: 'daxolo:platzhalter',
+    hooks: {
+      'astro:build:done': async ({ dir }) => {
+        const wurzel = fileURLToPath(dir);
+        const funde = [];
+        for (const datei of (await readdir(wurzel, { recursive: true })).sort()) {
+          const pfad = `${wurzel}/${datei}`;
+          if (BINAER.test(datei) || !(await stat(pfad)).isFile()) continue;
+          const gefunden = findePlatzhalter(await readFile(pfad, 'utf8'));
+          if (gefunden.length > 0) funde.push(`  ${datei}: ${gefunden.join(', ')}`);
+        }
+        if (funde.length > 0) {
+          throw new Error(
+            `Platzhalter im Output — so darf nichts live gehen:\n${funde.join('\n')}`,
+          );
+        }
+      },
+    },
+  };
+}
 
 /**
  * 404-Seiten dorthin, wo Cloudflare Pages sie sucht: /de/404.html usw. Astro
@@ -104,7 +136,7 @@ export default defineConfig({
     inlineStylesheets: 'always',
   },
 
-  integrations: [fehlerseiten(), sitemap()],
+  integrations: [fehlerseiten(), platzhalter(), sitemap()],
 
   vite: {
     plugins: [tailwindcss()],

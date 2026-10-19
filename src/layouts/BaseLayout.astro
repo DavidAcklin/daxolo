@@ -6,6 +6,7 @@ import { localeTags, locales, type Locale } from '../i18n/ui';
 import {
   getLocaleFromUrl,
   localePath,
+  rechtstextPath,
   switchLocalePath,
   useTranslations,
   werkzeugePath,
@@ -134,7 +135,13 @@ const alternateUrls = locales
     <footer class="fuss seite">
       {/* CLAUDE.md 2.1 — das Verkaufsargument steht auf jeder Seite. */}
       <p>{t('footer.privacy')}</p>
-      {/* TODO: Impressum und Datenschutzerklaerung in allen Sprachen (CLAUDE.md 10). */}
+      {/* CLAUDE.md 10: Impressum und Datenschutz aus dem Footer jeder Seite. */}
+      <nav aria-label={t('footer.legal')}>
+        <ul class="rechtliches">
+          <li><a href={rechtstextPath('impressum', locale)}>{t('footer.impressum')}</a></li>
+          <li><a href={rechtstextPath('datenschutz', locale)}>{t('footer.datenschutz')}</a></li>
+        </ul>
+      </nav>
     </footer>
   </body>
 </html>
@@ -184,5 +191,15 @@ const alternateUrls = locales
 
   .fuss p {
     margin: 0;
+  }
+
+  .rechtliches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-innen);
+    list-style: none;
+    margin: 0;
+    margin-block-start: var(--spacing-eng);
+    padding: 0;
   }
 </style>
