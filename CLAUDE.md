@@ -41,6 +41,11 @@ Sachlich, knapp, präzise. Kein Marketing-Sprech, keine Ausrufezeichen, kein "ei
 und kein "schnell und unkompliziert". Wir schreiben für Leute, die mit Geld arbeiten und
 Genauigkeit über Begeisterung stellen. Das Tool beweist es, der Text behauptet es nicht.
 
+**Französisch siezt durchgehend** (vouvoiement): Oberfläche, Fehlermeldungen, Erklärtexte
+und Rechtstexte. Wir sprechen Treuhand und Selbstständige an, und ein Wechsel der Anrede
+innerhalb der Seite fällt französischsprachigen Leser:innen sofort auf. Die Regel gilt ab
+dem ersten Werkzeug — bei vierzig Werkzeugen wird jede spätere Umstellung teuer.
+
 ---
 
 ## 2. Eiserne Regeln
