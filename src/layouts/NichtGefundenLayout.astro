@@ -1,0 +1,76 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Kachel from '../components/Kachel.astro';
+import { localeTags, locales, ui, type Locale } from '../i18n/ui';
+import { localePath, werkzeugePath } from '../i18n/utils';
+
+/**
+ * 404-Seite (CLAUDE.md 9: nie ein leerer Bildschirm).
+ *
+ * Cloudflare Pages sucht für eine unbekannte Adresse die nächste 404.html den
+ * Pfad hinauf: /de/… findet /de/404.html, alles ausserhalb einer Sprache
+ * /404.html. Die Seiten je Sprache zeigen eine Sprache; die Wurzel kennt die
+ * Sprache nicht und zeigt alle drei, jede mit eigenem `lang`.
+ *
+ * Ohne die Wurzel-404 hält Pages die Seite für eine Single-Page-App und
+ * liefert für jede unbekannte Adresse die Startseite mit Status 200 aus.
+ */
+interface Props {
+  sprachen: readonly Locale[];
+}
+
+const { sprachen } = Astro.props;
+const mehrsprachig = sprachen.length > 1;
+const titel = sprachen.map((sprache) => ui[sprache]['notfound.title']).join(' · ');
+
+// Der Sprachumschalter führt auf die Startseiten: eine 404 hat keine Fassungen.
+const startseiten = Object.fromEntries(locales.map((sprache) => [sprache, localePath(sprache)]));
+---
+
+<BaseLayout
+  title={titel}
+  description={ui[sprachen[0] ?? 'de']['notfound.text']}
+  alternates={startseiten}
+  noindex
+>
+  <div class="stapel">
+    <h1>
+      {
+        mehrsprachig
+          ? sprachen.map((sprache, i) => (
+              <>
+                {i > 0 && ' · '}
+                <span lang={localeTags[sprache]}>{ui[sprache]['notfound.title']}</span>
+              </>
+            ))
+          : titel
+      }
+    </h1>
+    {
+      sprachen.map((sprache) => (
+        <div lang={mehrsprachig ? localeTags[sprache] : undefined}>
+          <Kachel>
+            <p>{ui[sprache]['notfound.text']}</p>
+            <p>
+              <a href={werkzeugePath(sprache)}>{ui[sprache]['notfound.link']}</a>
+            </p>
+          </Kachel>
+        </div>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  p + p {
+    margin-block-start: var(--spacing-eng);
+  }
+</style>

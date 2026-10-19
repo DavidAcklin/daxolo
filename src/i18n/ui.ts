@@ -63,6 +63,11 @@ const de = {
     'Die Verantwortung für ihre Verwendung bleibt bei dir.',
   'tool.explanation.title': 'Erklärung',
   'footer.privacy': 'Alle Berechnungen laufen in deinem Browser. Deine Daten verlassen ihn nie.',
+  'notfound.title': 'Seite nicht gefunden',
+  'notfound.text':
+    'Unter dieser Adresse gibt es keine Seite. Prüfe die Schreibweise oder suche das Werkzeug ' +
+    'in der Übersicht.',
+  'notfound.link': 'Zur Werkzeugübersicht',
 } as const;
 
 /** Jede Sprache muss alle Schluessel bedienen — sonst schlaegt der Typecheck fehl. */
@@ -91,6 +96,11 @@ const fr: UiStrings = {
   'tool.explanation.title': 'Explication',
   'footer.privacy':
     'Tous les calculs se font dans ton navigateur. Tes données ne le quittent jamais.',
+  'notfound.title': 'Page introuvable',
+  'notfound.text':
+    'Il n’existe aucune page à cette adresse. Vérifie l’orthographe ou cherche l’outil dans ' +
+    'la vue d’ensemble.',
+  'notfound.link': 'Vers la vue d’ensemble des outils',
 };
 
 const en: UiStrings = {
@@ -115,6 +125,10 @@ const en: UiStrings = {
     'Responsibility for their use remains with you.',
   'tool.explanation.title': 'Explanation',
   'footer.privacy': 'All calculations run in your browser. Your data never leaves it.',
+  'notfound.title': 'Page not found',
+  'notfound.text':
+    'There is no page at this address. Check the spelling or find the tool in the overview.',
+  'notfound.link': 'Go to the tool overview',
 };
 
 export const ui: Record<Locale, UiStrings> = { de, fr, en };

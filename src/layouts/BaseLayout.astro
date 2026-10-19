@@ -20,9 +20,15 @@ interface Props {
    * was drinsteht — fuer Seiten mit uebersetzten Slugs.
    */
   alternates?: Partial<Record<Locale, string>> | undefined;
+  /**
+   * Für Seiten ohne eigene Adresse, etwa die 404-Seiten: Sie werden unter jeder
+   * unbekannten URL ausgeliefert. Dann gibt es kein canonical und kein hreflang,
+   * und die Sitemap lässt die Seite weg.
+   */
+  noindex?: boolean | undefined;
 }
 
-const { title, description, alternates } = Astro.props;
+const { title, description, alternates, noindex = false } = Astro.props;
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -47,9 +53,19 @@ const alternateUrls = locales
     <meta name="description" content={description} />
     {/* Ohne Icon fragt der Browser /favicon.ico an und protokolliert einen 404. */}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="canonical" href={canonical.href} />
-    {alternateUrls.map((alt) => <link rel="alternate" hreflang={alt.tag} href={alt.href} />)}
-    <link rel="alternate" hreflang="x-default" href={new URL(localePath('de'), base).href} />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <>
+          <link rel="canonical" href={canonical.href} />
+          {alternateUrls.map((alt) => (
+            <link rel="alternate" hreflang={alt.tag} href={alt.href} />
+          ))}
+          <link rel="alternate" hreflang="x-default" href={new URL(localePath('de'), base).href} />
+        </>
+      )
+    }
 
     {/* Schrift der ersten Textzeile vorladen, damit LCP nicht auf sie wartet. */}
     <link

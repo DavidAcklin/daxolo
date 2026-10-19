@@ -1,11 +1,42 @@
 // @ts-check
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { access, readdir, readFile, rename, rmdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import { locales } from './src/i18n/ui';
 import { eintragAusHtml, pruefeSitemap, sitemapXml } from './src/lib/sitemap';
 
 const SITE = 'https://daxolo.ch';
+
+/**
+ * 404-Seiten dorthin, wo Cloudflare Pages sie sucht: /de/404.html usw. Astro
+ * schreibt src/pages/de/404.astro nach de/404/index.html; nur die Wurzel-404
+ * landet von selbst in 404.html. Fehlt eine, bricht der Build ab — ohne
+ * /404.html liefert Pages jede unbekannte Adresse mit Status 200 aus.
+ *
+ * @returns {import('astro').AstroIntegration}
+ */
+function fehlerseiten() {
+  return {
+    name: 'daxolo:fehlerseiten',
+    hooks: {
+      'astro:build:done': async ({ dir }) => {
+        await access(new URL('404.html', dir)).catch(() => {
+          throw new Error('404.html fehlt: Cloudflare Pages würde die Seite als SPA ausliefern.');
+        });
+        for (const sprache of locales) {
+          const ordner = new URL(`${sprache}/404/`, dir);
+          await rename(new URL('index.html', ordner), new URL(`${sprache}/404.html`, dir)).catch(
+            () => {
+              throw new Error(`src/pages/${sprache}/404.astro fehlt oder wurde nicht gebaut.`);
+            },
+          );
+          await rmdir(ordner);
+        }
+      },
+    },
+  };
+}
 
 /**
  * sitemap.xml aus dem gebauten HTML (src/lib/sitemap.ts). Bricht den Build ab,
@@ -73,7 +104,7 @@ export default defineConfig({
     inlineStylesheets: 'always',
   },
 
-  integrations: [sitemap()],
+  integrations: [fehlerseiten(), sitemap()],
 
   vite: {
     plugins: [tailwindcss()],
