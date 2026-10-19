@@ -1,0 +1,43 @@
+# Antwort-Header für Cloudflare Pages. Gilt für alles, was Pages ausliefert;
+# Weiterleitungen der Zonen (www, daxolo.com, daxolo.de) laufen vorher in
+# Cloudflare und tragen diese Header nicht.
+#
+# Content-Security-Policy — CLAUDE.md 2.1 und 2.6: nichts wird von fremden
+# Servern geladen und nichts an fremde Server geschickt.
+#   default-src 'none'      Was nicht ausdrücklich erlaubt ist, ist verboten.
+#   script-src              Skripte nur als Datei von daxolo.ch, dazu genau ein
+#                           Inline-Skript per Hash: das Modus-Skript im Kopf
+#                           (src/layouts/BaseLayout.astro). Ändert es sich, ist
+#                           der Hash hier neu zu setzen; der Smoke-Test in
+#                           tests/e2e/auslieferung.spec.ts nennt den neuen Wert.
+#   style-src               Das CSS liegt inline im HTML (inlineStylesheets:
+#                           'always', LCP-Budget, CLAUDE.md 8) und unterscheidet
+#                           sich je Seite. Deshalb 'unsafe-inline' für Styles,
+#                           nie für Skripte. Abfluss über CSS ist trotzdem
+#                           gesperrt: img-src und font-src erlauben nur 'self'.
+#   img-src, font-src       Favicon und selbst gehostete Schriften.
+#   base-uri 'none'         Kein eingeschleustes <base> kann relative URLs umbiegen.
+#   form-action 'self'      Formulare senden höchstens an die eigene Seite.
+#   frame-ancestors 'none'  Keine fremde Seite bettet ein Werkzeug ein
+#                           (Clickjacking). Geht nur als Header, nicht als <meta>.
+#
+# Strict-Transport-Security — nach dem ersten Besuch verbindet der Browser nur
+#   noch per HTTPS, auch für Subdomains. Ohne preload: der Eintrag in die
+#   Browser-Liste ist kaum rückgängig zu machen und wird separat entschieden.
+# Referrer-Policy: no-referrer — keine URL von daxolo.ch erscheint bei
+#   fremden Servern; keine Funktion der Seite braucht einen Referrer.
+# X-Content-Type-Options: nosniff — der Browser hält sich an den gemeldeten
+#   Typ und führt keine Datei als Skript aus, die keines ist.
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'sha256-susrY4SJt3aJ+mF2XRKZZ6nVnPGFkt3r6IWnRmGobL8='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+
+# Die pages.dev-Adressen liefern denselben Inhalt wie daxolo.ch. Suchmaschinen
+# sollen nur daxolo.ch kennen (CLAUDE.md 4: kein doppelter Inhalt).
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

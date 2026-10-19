@@ -77,5 +77,12 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      // Kleine Skripte legt Astro sonst inline in das HTML. Die CSP in
+      // public/_headers erlaubt genau ein Inline-Skript, das Modus-Skript im
+      // Kopf, per Hash; alles andere kommt als Datei von 'self'. Gilt nur für
+      // Skripte und importierte Assets — Stylesheets steuert inlineStylesheets.
+      assetsInlineLimit: 0,
+    },
   },
 });
