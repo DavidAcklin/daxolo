@@ -34,6 +34,13 @@
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
 
+# Dateien unter /_astro/ tragen einen Inhalts-Hash im Namen: Ändert sich der
+# Inhalt, ändert sich der Name. Der Browser darf sie ein Jahr behalten, ohne
+# nachzufragen. HTML und /fonts/ haben feste Namen und behalten die Vorgabe von
+# Pages (max-age=0, must-revalidate).
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
 # Die pages.dev-Adressen liefern denselben Inhalt wie daxolo.ch. Suchmaschinen
 # sollen nur daxolo.ch kennen (CLAUDE.md 4: kein doppelter Inhalt).
 https://:project.pages.dev/*

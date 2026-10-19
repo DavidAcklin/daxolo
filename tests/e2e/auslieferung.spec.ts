@@ -81,6 +81,20 @@ test('jede Seite kommt mit den Headern aus _headers', async ({ request }) => {
   }
 });
 
+test('Dateien unter /_astro/ sind unveränderlich zwischenspeicherbar, HTML nicht', async ({
+  request,
+}) => {
+  const seite = await request.get('/de/werkzeuge/iban-pruefer/');
+  expect(seite.headers()['cache-control']).toBe('public, max-age=0, must-revalidate');
+
+  const dateien = [...(await seite.text()).matchAll(/src="(\/_astro\/[^"]+)"/g)].map((m) => m[1]);
+  expect(dateien.length).toBeGreaterThan(0);
+  for (const datei of dateien) {
+    const antwort = await request.get(datei ?? '');
+    expect(antwort.headers()['cache-control'], datei).toBe('public, max-age=31536000, immutable');
+  }
+});
+
 test('robots.txt verweist auf die Sitemap der Produktionsdomain', async ({ request }) => {
   const robots = await (await request.get('/robots.txt')).text();
   expect(robots).toContain(`Sitemap: ${PRODUKTION}/sitemap.xml`);
